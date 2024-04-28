@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility</title>
+    <script src="/main.js" type="application/javascript"></script>
+
+    <style>
+        tr:nth-child(even) {
+            background-color: #D6EEEE;
+        }
+        table, td, th {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+    <h2>NOT AFFILIATED WITH SONY</h2>
+    <span>please don't sue me :D</span>
+    <p>
+        With this tool you can search LBP levels from the official server archive.
+        <br>
+        if you prefix with user: (e.g. user:Zaprit282) it will search for a user, otherwise it will search levels by name and description
+    </p>
+    <form id="search" method="get" action="/search">
+        <label for="query">Level Search:</label>
+        <input id="query" type="text" placeholder="Search for a level" />
+        <input type="submit" title="Search!" onclick="setSearch()"/>
+        <input id="type" type="hidden" name="t" />
+        <input id="query_bg" type="hidden" name="s" />
+    </form>
+
+    {{ if .HasResults }}
+        {{ if (gt .ResultCount 0) }}
+            <h2>Found {{ .ResultCount }} Levels</h2>
+            <table>
+                <tr>
+                    <th>Level ID</th>
+                    <th>Level Name</th>
+                    <th>Level Uploader</th>
+                    <th>Level Description</th>
+                    <th>Uploaded In</th>
+                    <th>First Published</th>
+                    <th>Last Updated</th>
+                    <th>Heart Count (approximate)</th>
+                    <th>Background ID</th>
+                </tr>
+                {{ range $l := .Results }}
+                <tr>
+                    <td>{{ $l.ID }}</td>
+                    <td>{{ $l.Name }}</td>
+                    <td>{{ $l.NpHandle }}</td>
+                    <td>{{ $l.Description }}</td>
+                    <td>{{ $l.UploadedIn }}</td>
+                    <td>{{ $l.FirstPublished }}</td>
+                    <td>{{ $l.LastUpdated }}</td>
+                    <td>{{ $l.HeartCount }}</td>
+                    <td>{{ $l.Background }}</td>
+                </tr>
+                {{ end }}
+
+            </table>
+            {{ if (gt .ResultCount 50) }}
+                <span>Page {{len (printf "a%*s" .Page "")}}/{{.MaxPage}}</span>
+                <br>
+
+                {{ if (gt .Page 0) }}
+                <a href="/search?t={{ .SearchType }}&s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
+                {{else}}
+                <span style="color: gray">Previous Page</span>
+                {{ end }}
+
+                {{ if (lt .Page .MaxPage) }}
+                <a href="/search?t={{ .SearchType }}&s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
+                {{ else }}
+                <span style="color: gray">Next Page</span>
+                {{ end }}
+            {{ end }}
+        {{ else }}
+           <h2>No levels found, unfortunately</h2>
+        {{ end }}
+    {{ end }}
+</body>
+</html>
