@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>LBP Search Facility</title>
-    <script src="/main.js" type="application/javascript"></script>
 
     <style>
         tr:nth-child(even) {
@@ -18,17 +17,24 @@
 <body>
     <h2>NOT AFFILIATED WITH SONY</h2>
     <span>please don't sue me :D</span>
+    <h3>New! Search speed massively increased, sorting support, and icons</h3>
     <p>
         With this tool you can search LBP levels from the official server archive.
         <br>
-        if you prefix with user: (e.g. user:Zaprit282) it will search for a user, otherwise it will search levels by name and description
+        Just type a query for your level, optionally select a sorting method and hit the search button.
     </p>
     <form id="search" method="get" action="/search">
         <label for="query">Level Search:</label>
-        <input id="query" type="text" placeholder="Search for a level" />
-        <input type="submit" title="Search!" onclick="setSearch()"/>
-        <input id="type" type="hidden" name="t" />
-        <input id="query_bg" type="hidden" name="s" />
+        <input id="query" type="text" name="s" placeholder="Search for a level" />
+        <br>
+        <label for="sort">Sort</label><select name="sort" id="sort">
+            <option value="name">Level Name</option>
+            <option value="hearts">Hearts</option>
+            <option value="author">Author</option>
+        </select>
+        <label for="invert">Invert Sort</label><input name="invert" id="invert" type="checkbox" />
+        <br>
+        <input type="submit" title="Search!" onclick="setSearch()" />
     </form>
 
     {{ if .HasResults }}
@@ -36,6 +42,7 @@
             <h2>Found {{ .ResultCount }} Levels</h2>
             <table>
                 <tr>
+                    <th>Icon</th>
                     <th>Level ID</th>
                     <th>Level Name</th>
                     <th>Level Uploader</th>
@@ -48,6 +55,7 @@
                 </tr>
                 {{ range $l := .Results }}
                 <tr>
+                    <td><img style="width:128px;" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'"/></td>
                     <td>{{ $l.ID }}</td>
                     <td>{{ $l.Name }}</td>
                     <td>{{ $l.NpHandle }}</td>

@@ -2,9 +2,9 @@ package model
 
 type Slot struct {
 	ID               uint64 `gorm:"column:id"`
-	Name             string `gorm:"column:name index"`
+	Name             string `gorm:"column:name"`
 	Description      string `gorm:"column:description"`
-	NpHandle         string `gorm:"column:npHandle index"`
+	NpHandle         string `gorm:"column:npHandle"`
 	UploadedIn       string `gorm:"column:publishedIn"`
 	Game             uint8  `gorm:"column:game"`
 	FirstPublishedDB uint64 `gorm:"column:firstPublished"`
@@ -13,6 +13,9 @@ type Slot struct {
 	LastUpdated      string `gorm:"-"`
 	HeartCount       uint64 `gorm:"column:heartCount"`
 	Background       string `gorm:"column:background"`
+	IconDB           []byte `gorm:"column:icon"`
+	Icon             string `gorm:"-"`
+	RootLevel        []byte `gorm:"column:rootLevel"`
 }
 
 func (Slot) TableName() string {

@@ -3,8 +3,9 @@ package main
 import (
 	"LBPDumpSearch/model"
 	"embed"
+	"encoding/hex"
 	"fmt"
-	"github.com/glebarez/sqlite"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"html/template"
@@ -55,24 +56,52 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 		}
 		query := fmt.Sprintf("%%%s%%", unescapedquery)
 
-		switch r.URL.Query().Get("t") {
-		case "slot":
-			conn.Model(&model.Slot{}).Where("name LIKE ?", query).Count(&count)
+		sort := r.URL.Query().Get("sort")
 
-			if page != nil {
-				conn.Offset(int((*page)*50)).Limit(50).Where("name LIKE ?", query).Find(&slots)
-			} else {
-				conn.Limit(50).Where("name LIKE ?", query).Find(&slots)
-			}
-		case "user":
-			conn.Model(&model.Slot{}).Where("npHandle LIKE ?", query).Count(&count)
-
-			if page != nil {
-				conn.Offset(int((*page)*50)).Limit(50).Where("npHandle LIKE ?", query).Find(&slots)
-			} else {
-				conn.Limit(50).Where("npHandle LIKE ?", query).Find(&slots)
-			}
+		where := "(\"npHandle\" ILIKE ?) OR (name ILIKE ?) OR (description ILIKE ?)"
+		whereArr := []interface{}{query, query, query}
+		if sort == "author" {
+			where = "\"npHandle\" ILIKE ?"  // Just override for author, this is janky.
+			whereArr = []interface{}{query} // I hate this dearly
 		}
+
+		conn.Model(&model.Slot{}).Where(where, whereArr...).Count(&count)
+
+		q := conn.Limit(50)
+		if page != nil {
+			q = conn.Offset(int((*page) * 50)).Limit(50)
+		}
+
+		q = q.Where(where, whereArr...)
+
+		invert := false
+
+		if r.URL.Query().Get("invert") == "on" {
+			invert = true
+		}
+
+		switch sort {
+		case "name":
+			q = q.Order("name ASC")
+		case "author":
+			q = q.Order("\"npHandle\"")
+		case "hearts":
+			if invert {
+				q = q.Order("\"heartCount\" ASC")
+			} else {
+				q = q.Order("\"heartCount\" DESC")
+			}
+		case "published":
+			if invert {
+				q = q.Order("\"firstPublished\" DESC")
+			} else {
+
+			}
+
+		case "updated":
+		}
+
+		q.Find(&slots)
 
 		for i, slot := range slots {
 			slots[i].FirstPublished = time.UnixMilli(int64(slot.FirstPublishedDB)).Format(time.DateTime)
@@ -98,6 +127,8 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 					slots[i].UploadedIn = "LittleBigPlanet 3 PS4/PS5"
 				}
 			}
+
+			slots[i].Icon = hex.EncodeToString(slot.IconDB)
 		}
 		slog.Info("New Query",
 			slog.String("query", r.URL.Query().Get("s")),
@@ -137,55 +168,45 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 	}
 }
 
-func ServeJS() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		bytes, err := Files.ReadFile("website/main.js")
-		if err != nil {
-			panic(err)
-		}
-		w.Header().Set("Cache-Control", "max-age=31536000, immutable")
-		w.Write(bytes)
-	}
-}
-
+// /mnt/sysdata/dry.db
 func main() {
-	db, err := gorm.Open(sqlite.Open("/mnt/sysdata/dry.db"))
-	if err != nil {
-		panic(err)
-	}
-
-	db2, err := gorm.Open(postgres.Open("host=localhost user=lbpsearch password=lbpsearch dbname=lbpsearch port=5432 sslmode=disable "))
-	if err != nil {
-		panic(err)
-	}
-
-	err = db2.AutoMigrate(&model.Slot{})
-	if err != nil {
-		panic(err)
-	}
-
-	rows, err := db.Model(&model.Slot{}).Rows()
-	defer rows.Close()
-
-	c := 1
-	for rows.Next() {
-		var slot model.Slot
-		// ScanRows scans a row into a struct
-		db.ScanRows(rows, &slot)
-		fmt.Printf("Processing slot #%d \"%s\"\n", c, slot.Name)
-		c++
-		db2.Create(&slot)
-		// Perform operations on each user
-	}
-
-	//
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/main.js", ServeJS())
-	//mux.HandleFunc("/", IndexHandler())
-	//mux.HandleFunc("/search", SearchHandler(db))
-	//
-	//err = http.ListenAndServe(":8182", mux)
+	//db, err := gorm.Open(sqlite.Open("/Users/henry/Downloads/dry.db"))
 	//if err != nil {
 	//	panic(err)
 	//}
+
+	db, err := gorm.Open(postgres.Open("host=localhost user=lbpsearch password=lbpsearch dbname=lbpsearch port=5432 sslmode=disable"))
+	if err != nil {
+		panic(err)
+	}
+
+	//err = db2.AutoMigrate(&model.Slot{})
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	//rows, err := db.Model(&model.Slot{}).Rows()
+	//defer rows.Close()
+	//
+	//c := 1
+	//for rows.Next() {
+	//	var slot model.Slot
+	//	// ScanRows scans a row into a struct
+	//	db.ScanRows(rows, &slot)
+	//	fmt.Printf("Processing slot #%d \"%s\"\n", c, slot.Name)
+	//	c++
+	//	db2.Create(&slot)
+	//	// Perform operations on each user
+	//}
+
+	r := chi.NewRouter()
+
+	r.Get("/", IndexHandler())
+	r.Get("/search", SearchHandler(db))
+	r.Get("/icon/{hash}", IconHandler())
+
+	err = http.ListenAndServe(":8182", r)
+	if err != nil {
+		panic(err)
+	}
 }
