@@ -16,8 +16,15 @@ type Slot struct {
 	IconDB           []byte `gorm:"column:icon"`
 	Icon             string `gorm:"-"`
 	RootLevel        []byte `gorm:"column:rootLevel"`
+	RootLevelStr     string `gorm:"-"`
 }
 
 func (Slot) TableName() string {
 	return "slot"
+}
+
+type SearchCache struct {
+	Query      string `gorm:"column:query"`
+	Count      int64  `gorm:"column:count"`
+	AuthorSort bool   `gorm:"column:author_sort"`
 }

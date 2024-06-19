@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility - {{.User.NpHandle}}'s Levels</title>
+
+    <link rel="stylesheet" href="/static/main.css">
+
+    <meta content="{{.User.NpHandle}} - LBPSearch" property="og:title" />
+    <meta property="og:type" content="website" />
+    <meta content="{{.User.NpHandle}}'s Levels from the LittleBigPlanet™ archive" property="og:description" />
+    <meta content="/icon/{{.User.Icon}}" property="og:image" />
+    <meta content="#469CCB" data-react-helmet="true" name="theme-color" />
+    <script defer data-domain="zaprit.fish" src="https://plausible.valtek.uk/js/script.js"></script>
+</head>
+<body>
+
+<div>
+
+    <h3 class="centre header nodeco"><a class="nodeco" href="/">LittleBigPlanet™ Archive Search utility</a></h3>
+</div>
+<hr>
+<h1 class="header">{{.User.NpHandle}}</h1>
+<h2 class="header">Has {{ .ResultCount }} Levels In Archive</h2>
+<br>
+<h3>If you found this tool useful for finding one of your levels, please consider donating to allow development to continue.</h3>
+<iframe src="https://github.com/sponsors/Zaprit/button" title="Sponsor Zaprit" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+<br>
+<table>
+    <tr>
+        <th>Icon</th>
+        <th>Level ID</th>
+        <th>Level Name</th>
+        <th>Level Description</th>
+        <th>Uploaded In</th>
+        <th>First Published</th>
+        <th>Last Updated</th>
+        <th>Heart Count (approximate)</th>
+        <th>Background ID</th>
+    </tr>
+    {{ range $l := .Results }}
+    <tr>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}"><img style="width:128px;" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'"/></a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.ID }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Name }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Description }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.UploadedIn }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.FirstPublished }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.LastUpdated }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.HeartCount }}</a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Background }}</a></td>
+    </tr>
+    {{ end }}
+
+</table>
+</body>
+</html>

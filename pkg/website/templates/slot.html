@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility - {{.Result.Name}}</title>
+
+    <link rel="stylesheet" href="/static/main.css" />
+
+    <meta content="{{.Result.Name}}" property="og:title" />
+    <meta property="og:type" content="website" />
+    <meta content="{{.Result.Description}}" property="og:description" />
+    <meta content="/icon/{{.Result.Icon}}" property="og:image" />
+    <meta content="#469CCB" data-react-helmet="true" name="theme-color" />
+    <script defer data-domain="zaprit.fish" src="https://plausible.valtek.uk/js/script.js"></script>
+</head>
+<body>
+
+<div >
+
+    <h3 class="centre header nodeco"><a class="nodeco" href="/">LittleBigPlanet™ Archive Search utility</a></h3>
+</div>
+    <hr>
+
+    <h1 class="header">{{.Result.Name}}</h1>
+        <h2 class="header">By <img class="avatar" onerror="this.style.display='none'" alt="user avatar" src="/icon/{{.UserIcon}}"><a href="/user/{{.Result.NpHandle}}">{{.Result.NpHandle}}</a></h2>
+
+    <div>
+        <span class="code">{{.Result.RootLevelStr}}</span>
+    </div>
+    <br>
+<img src="/icon/{{.Result.Icon}}" alt="Level Icon" aria-hidden="true" onerror="this.style.display='none'">
+    <br>
+    <a class="play-on-refresh-button" target=”_blank” href="https://lbp.littlebigrefresh.com/playhash?hash={{.Result.RootLevelStr}}">
+        <img class="refresh-icon" alt="Refresh Logo" aria-hidden="true" src="/static/refresh.svg" onerror="this.src='/static/refresh.png'">
+        Play On Refresh
+    </a>
+
+    <a href="{{.DownloadLink}}" target=”_blank”>Download RootLevel</a>
+    <br>
+    <a href="/dl_archive/{{.Result.ID}}" target=”_blank”>Download Archive</a> (Credit to uhwot for their amazing <a href="https://github.com/uhwot/lbp_archive_dl">lbp_archive_dl</a> tool)
+
+    <br>
+    <h3>If you found this tool useful for finding one of your levels, please consider donating to allow development to continue.</h3>
+    <iframe src="https://github.com/sponsors/Zaprit/button" title="Sponsor Zaprit" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+
+    <h2 class="header">Description</h2>
+
+    <p class="description">
+        {{.Result.Description}}
+    </p>
+
+    <h2 class="header">Level Information</h2>
+
+    <table>
+        <tr>
+            <td>Uploaded in: </td><td>{{.Result.UploadedIn}}</td>
+            </tr>
+        <tr>
+            <td>Heart count: </td><td>{{.Result.HeartCount}}</td>
+        </tr>
+        <tr>
+            <td>First published: </td><td>{{.Result.FirstPublished}}</td>
+        </tr>
+        <tr>
+            <td>Last updated: </td><td>{{.Result.LastUpdated}}</td>
+        </tr>
+    </table>
+
+</body>

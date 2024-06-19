@@ -1,0 +1,30 @@
+<h2>2024-06-18:</h2>
+<ul>
+    <li>Performance improvements, as we've got a bigger server now.<ul>
+    <li>Icon performance improvements, now pulling from the refresh dry archive as opposed to some zips over usb<ul>
+</ul>
+<br>
+
+<h2>2024-06-08:</h2>
+<ul>
+    <li>Dark Mode!</li>
+    <li>Finally you can stop burning your eyes out trying to download lbp levels</li>
+</ul>
+
+<br>
+
+<h2>2024-06-01:</h2>
+<ul>
+    <li>Added level backup exporting</li>
+</ul>
+<br>
+<h2>2024-05-25:</h2>
+<ul>
+    <li>Added styles</li>
+    <li>Added a changelog</li>
+    <li>Added user page</li>
+    <li>Added slot page</li>
+    <li>Added "Play on Refresh" button</li>
+    <li>Improved performance thanks to search count caching.</li>
+    <li>Removed herobrine</li>
+</ul>

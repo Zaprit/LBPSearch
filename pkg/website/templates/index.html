@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility</title>
+
+    <link rel="stylesheet" href="/static/main.css">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <script defer data-domain="zaprit.fish" src="https://plausible.valtek.uk/js/script.js"></script>
+    <meta name="description" content="A search tool for the LittleBigPlanet official server archive. Find your favourite levels and download them to your PS3">
+    <link rel="canonical" href="https://zaprit.fish" />
+</head>
+<body>
+
+    <div class="container">
+    <h1 class="centre header">LittleBigPlanet™ Archive Search utility</h1>
+
+    {{ if .Unsociable }}
+        <h3 class="header">It is currently night where the server is hosted (a raspberry pi in my bedroom) and in the interest of not waking the hard drives that the archive lives on icon loading is temporarily disabled, it will resume service at 8:00 AM UTC</h3>
+    {{ end }}
+    {{ if .Failed }}
+        <h3 style="color: darkred"><strong>{{.Error}}</strong></h3>
+    {{ end }}
+    <form id="search" method="get" action="/search">
+        <input id="query" type="text" name="s" placeholder="Search for a level" />
+        <br>
+        <label for="sort">Sort</label><select name="sort" id="sort">
+            <option value="name">Level Name</option>
+            <option value="hearts">Hearts</option>
+            <option value="author">Author</option>
+        </select>
+        <label for="invert">Invert Sort</label><input name="invert" id="invert" type="checkbox" />
+        <br>
+        <input type="submit" value="Search!"/>
+    </form>
+
+    {{ if .HasResults }}
+        {{ if (gt .ResultCount 0) }}
+            <h2 class="header">Found {{ .ResultCount }} Levels In {{ .Elapsed}}</h2>
+            <table>
+                <tr>
+                    <th>Icon</th>
+                    <th>Level ID</th>
+                    <th>Level Name</th>
+                    <th>Level Uploader</th>
+                    <th>Level Description</th>
+                    <th>Uploaded In</th>
+                    <th>First Published</th>
+                    <th>Last Updated</th>
+                    <th>Heart Count (approximate)</th>
+                    <th>Background ID</th>
+                </tr>
+                {{ range $l := .Results }}
+                <tr>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">
+                        <img style="width:128px;" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'"/>
+                    </a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.ID }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Name }}</a></td>
+                    <td><a class="table-link" href="/user/{{ $l.NpHandle }}">{{ $l.NpHandle }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Description }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.UploadedIn }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.FirstPublished }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.LastUpdated }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.HeartCount }}</a></td>
+                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Background }}</a></td>
+                </tr>
+                {{ end }}
+
+            </table>
+            {{ if (gt .ResultCount 50) }}
+                <span>Page {{len (printf "a%*s" .Page "")}}/{{.MaxPage}}</span>
+                <br>
+
+                {{ if (gt .Page 0) }}
+                <a href="/search?s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
+                {{else}}
+                <span style="color: gray">Previous Page</span>
+                {{ end }}
+
+                {{ if (lt .Page .MaxPage) }}
+                <a href="/search?s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
+                {{ else }}
+                <span style="color: gray">Next Page</span>
+                {{ end }}
+            {{ end }}
+        {{ else }}
+           <h2>No levels found, unfortunately</h2>
+        {{ end }}
+    {{ end }}
+<footer>
+    <div class="shameless-plug">
+        <a href="/changelog">Changelog</a>
+        <br>
+        A project created by Zaprit, if you're interested in my LBP custom server project have a look at <a target="_blank" href="https://hugespaceship.io">hugespaceship.io</a>
+        <br>
+        The source code to this website can be found <a href="https://github.com/Zaprit/LBPSearch" target="_blank">here</a>
+        <br>
+        The archive source can be found <a href="https://archive.org/details/@tamiya99/uploads" target="_blank">here</a>
+    </div>
+
+
+
+    <div class="disclaimer">
+    <h2 class="header">NOT AFFILIATED WITH SONY</h2>
+    <span>please don't sue me :D</span>
+    </div>
+</footer>
+    </div>
+</body>
+</html>
