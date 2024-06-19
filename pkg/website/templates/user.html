@@ -22,9 +22,11 @@
 <hr>
 <h1 class="header">{{.User.NpHandle}}</h1>
 <h2 class="header">Has {{ .ResultCount }} Levels In Archive</h2>
+{{if .ShowSponsor}}
 <br>
 <h3>If you found this tool useful for finding one of your levels, please consider donating to allow development to continue.</h3>
 <iframe src="https://github.com/sponsors/Zaprit/button" title="Sponsor Zaprit" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+{{end}}
 <br>
 <table>
     <tr>

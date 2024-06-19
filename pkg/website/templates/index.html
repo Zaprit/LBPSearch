@@ -15,9 +15,6 @@
     <div class="container">
     <h1 class="centre header">LittleBigPlanet™ Archive Search utility</h1>
 
-    {{ if .Unsociable }}
-        <h3 class="header">It is currently night where the server is hosted (a raspberry pi in my bedroom) and in the interest of not waking the hard drives that the archive lives on icon loading is temporarily disabled, it will resume service at 8:00 AM UTC</h3>
-    {{ end }}
     {{ if .Failed }}
         <h3 style="color: darkred"><strong>{{.Error}}</strong></h3>
     {{ end }}

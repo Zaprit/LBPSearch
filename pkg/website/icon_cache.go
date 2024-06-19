@@ -46,12 +46,6 @@ func IconHandler(cfg *config.Config) http.HandlerFunc {
 			io.Copy(w, imgFile)
 		}
 
-		if isHourUnsociable() {
-			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Hour is currently unsociable, not extracting image to avoid waking hdds."))
-			return
-		}
-
 		slog.Info("serving icon", slog.String("hash", hash), slog.Bool("cached", false))
 
 		img, err := getImageFromJvyden(hash, cfg.CachePath)

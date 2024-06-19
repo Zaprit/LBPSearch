@@ -17,15 +17,6 @@ import (
 	"time"
 )
 
-// isHourUnsociable detects if the hour is past when I would want the archive drives active, as they are quite loud.
-func isHourUnsociable() bool {
-	h, _, _ := time.Now().Clock()
-	if h > 21 || h < 7 {
-		return true
-	}
-	return false
-}
-
 // IndexHandler serves the root page of the website, it doesn't have to do much as the index is mostly static
 func IndexHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +24,6 @@ func IndexHandler() http.HandlerFunc {
 		err := IndexTemplate.Execute(w, map[any]any{
 			"HasResults": false,
 			"Failed":     false,
-			"Unsociable": isHourUnsociable(),
 		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
@@ -173,7 +163,6 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 			"SearchType":  r.URL.Query().Get("t"),
 			"SearchQuery": r.URL.Query().Get("s"),
 			"ResultCount": count,
-			"Unsociable":  isHourUnsociable(),
 			"Failed":      false,
 			"Elapsed":     time.Since(startTime).Round(time.Millisecond).String(),
 		}
@@ -204,14 +193,15 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 	}
 }
 
-func UserHandler(conn *gorm.DB) http.HandlerFunc {
+func UserHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := model.User{}
 		conn.First(&user, "np_handle = ?", r.PathValue("npHandle"))
 
 		data := map[any]any{
-			"HasResults": false,
-			"Failed":     false,
+			"HasResults":  false,
+			"Failed":      false,
+			"ShowSponsor": cfg.ShowSponsorMessage,
 		}
 
 		if user.NpHandle != "" {
@@ -273,14 +263,15 @@ func UserHandler(conn *gorm.DB) http.HandlerFunc {
 	}
 }
 
-func SlotHandler(conn *gorm.DB) http.HandlerFunc {
+func SlotHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slot := model.Slot{}
 		conn.First(&slot, "id = ?", r.PathValue("slotID"))
 
 		data := map[any]any{
-			"HasResults": false,
-			"Failed":     false,
+			"HasResults":  false,
+			"Failed":      false,
+			"ShowSponsor": cfg.ShowSponsorMessage,
 		}
 
 		if slot.ID != 0 {
