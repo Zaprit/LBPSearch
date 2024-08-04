@@ -20,6 +20,8 @@ type Config struct {
 	DatabaseSSLMode  string `yaml:"database_ssl_mode"`
 
 	ShowSponsorMessage bool `yaml:"show_sponsor_message"`
+
+	HeaderInjection string `yaml:"header_injection"`
 }
 
 // LoadConfig reads the configuration file and returns a Config struct.

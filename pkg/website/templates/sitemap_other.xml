@@ -4,7 +4,7 @@
 
     <url>
 
-        <loc>https://zaprit.fish/</loc>
+        <loc>{{.GlobalURL}}/</loc>
 
         <lastmod>2024-06-02</lastmod>
 
@@ -16,7 +16,7 @@
 
     <url>
 
-        <loc>https://zaprit.fish/changelog</loc>
+        <loc>{{.GlobalURL}}/changelog</loc>
 
         <changefreq>weekly</changefreq>
 

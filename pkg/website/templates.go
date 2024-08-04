@@ -21,3 +21,5 @@ var ChangelogTemplate = template.Must(template.ParseFS(Templates, "templates/cha
 var SitemapTemplate = xmlTmpl.Must(xmlTmpl.ParseFS(Templates, "templates/sitemap_other.xml"))
 var SitemapIndexTemplate = xmlTmpl.Must(xmlTmpl.ParseFS(Templates, "templates/sitemapindex.xml"))
 var RobotsTXTTemplate = template.Must(template.ParseFS(Templates, "templates/robots.txt"))
+var BackupFailTemplate = template.Must(template.ParseFS(Templates, "templates/backupfail.html"))
+var NotFoundTemplate = template.Must(template.ParseFS(Templates, "templates/notfound.html"))

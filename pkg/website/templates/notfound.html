@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility - Not Found</title>
+
+    <link rel="stylesheet" href="/static/main.css">
+    {{.HeaderInjection}}
+    <script>document.addEventListener('DOMContentLoaded', function () { plausible('404', { props: { path: document.location.pathname } }); });</script>
+</head>
+<body>
+<div>
+
+    <h3 class="centre nodeco header"><a class="nodeco" href="/">LittleBigPlanet™ Archive Search utility</a></h3>
+</div>
+<hr>
+
+{{ if .Level }}
+<h1 class="header">Level not found</h1>
+
+<p>
+    The level with the ID specified ({{.LevelID}}) could not be found, this is likely due to a mistyped ID or bad link.
+    <br>
+    Please check the ID or if the link originated from this site please let me know.
+
+    You email me at <a href="mailto:someone@example.com">&lt;zaprit@zaprit.fish&gt;</a>
+    or create an issue on the GitHub I'll look into the problem and get it fixed ASAP.
+</p>
+
+{{ else }}
+
+<h1 class="header">404 Page not found</h1>
+
+<p>
+    The page specified could not be found, please check the spelling of the address or go back and try again.
+</p>
+
+{{ end }}
+</body>
+</html>

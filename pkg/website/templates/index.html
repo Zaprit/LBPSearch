@@ -6,9 +6,10 @@
 
     <link rel="stylesheet" href="/static/main.css">
     <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <script defer data-domain="zaprit.fish" src="https://plausible.valtek.uk/js/script.js"></script>
+    {{.HeaderInjection}}
+    
     <meta name="description" content="A search tool for the LittleBigPlanet official server archive. Find your favourite levels and download them to your PS3">
-    <link rel="canonical" href="https://zaprit.fish" />
+    <link rel="canonical" href="{{.GlobalURL}}" />
 </head>
 <body>
 

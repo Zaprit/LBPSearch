@@ -6,6 +6,7 @@ import (
 	"LBPDumpSearch/pkg/model"
 	"encoding/hex"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/klauspost/compress/gzip"
 	"gorm.io/gorm"
 	"html/template"
@@ -18,12 +19,14 @@ import (
 )
 
 // IndexHandler serves the root page of the website, it doesn't have to do much as the index is mostly static
-func IndexHandler() http.HandlerFunc {
+func IndexHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		err := IndexTemplate.Execute(w, map[any]any{
-			"HasResults": false,
-			"Failed":     false,
+			"HasResults":      false,
+			"Failed":          false,
+			"GlobalURL":       cfg.GlobalURL,
+			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
@@ -32,7 +35,7 @@ func IndexHandler() http.HandlerFunc {
 }
 
 // SearchHandler uses the same page as IndexHandler however it does a lot of processing to search for levels
-func SearchHandler(conn *gorm.DB) http.HandlerFunc {
+func SearchHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
 		slots := make([]model.Slot, 0)
@@ -158,13 +161,15 @@ func SearchHandler(conn *gorm.DB) http.HandlerFunc {
 		)
 
 		data := map[any]any{
-			"HasResults":  true,
-			"Results":     slots,
-			"SearchType":  r.URL.Query().Get("t"),
-			"SearchQuery": r.URL.Query().Get("s"),
-			"ResultCount": count,
-			"Failed":      false,
-			"Elapsed":     time.Since(startTime).Round(time.Millisecond).String(),
+			"HasResults":      true,
+			"Results":         slots,
+			"SearchType":      r.URL.Query().Get("t"),
+			"SearchQuery":     r.URL.Query().Get("s"),
+			"ResultCount":     count,
+			"Failed":          false,
+			"Elapsed":         time.Since(startTime).Round(time.Millisecond).String(),
+			"GlobalURL":       cfg.GlobalURL,
+			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 		}
 
 		// TODO: come up with better way of paginating, as the current count based method is slow, like really slow, like wtf why is this so slow levels of slow.
@@ -199,9 +204,11 @@ func UserHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 		conn.First(&user, "np_handle = ?", r.PathValue("npHandle"))
 
 		data := map[any]any{
-			"HasResults":  false,
-			"Failed":      false,
-			"ShowSponsor": cfg.ShowSponsorMessage,
+			"HasResults":      false,
+			"Failed":          false,
+			"ShowSponsor":     cfg.ShowSponsorMessage,
+			"GlobalURL":       cfg.GlobalURL,
+			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 		}
 
 		if user.NpHandle != "" {
@@ -268,10 +275,12 @@ func SlotHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 		slot := model.Slot{}
 		conn.First(&slot, "id = ?", r.PathValue("slotID"))
 
-		data := map[any]any{
-			"HasResults":  false,
-			"Failed":      false,
-			"ShowSponsor": cfg.ShowSponsorMessage,
+		data := map[string]any{
+			"HasResults":      false,
+			"Failed":          false,
+			"ShowSponsor":     cfg.ShowSponsorMessage,
+			"GlobalURL":       cfg.GlobalURL,
+			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 		}
 
 		if slot.ID != 0 {
@@ -325,10 +334,13 @@ func SlotHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-func ChangelogHandler() http.HandlerFunc {
+func ChangelogHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		err := ChangelogTemplate.Execute(w, template.HTML(Changelog))
+		err := ChangelogTemplate.Execute(w, map[string]any{
+			"GlobalURL": cfg.GlobalURL,
+			"Changelog": template.HTML(Changelog),
+		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
 		}
@@ -344,10 +356,33 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 			w.Write([]byte(err.Error()))
 			return
 		}
-		f, err := DownloadArchive(conn, id, cfg.CachePath, cfg.ArchiveDlCommandPath)
-		if err != nil {
+		requestID := uuid.New()
+
+		slot := model.Slot{}
+		conn.First(&slot, "id = ?", id)
+		if slot.ID == 0 {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(err.Error()))
+			err := NotFoundTemplate.Execute(w, map[string]any{
+				"Level":           true,
+				"LevelID":         id,
+				"HeaderInjection": template.HTML(cfg.HeaderInjection),
+			})
+			if err != nil {
+				slog.Error("failed to execute template", slog.Any("error", err))
+			}
+			return
+		}
+
+		f, err := DownloadArchive(requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusInternalServerError)
+			BackupFailTemplate.Execute(w, map[string]any{
+				"LevelName":       slot.Name,
+				"LevelID":         id,
+				"HeaderInjection": template.HTML(cfg.HeaderInjection),
+			})
 			return
 		}
 		w.Header().Set("Content-Type", "application/zip")
@@ -357,45 +392,53 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 	}
 }
 
-func SitemapHandler() http.HandlerFunc {
+func SitemapHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		w.Header().Set("Content-Type", "application/xml")
-		err := SitemapTemplate.Execute(w, nil)
+		err := SitemapTemplate.Execute(w, map[string]any{
+			"GlobalURL": cfg.GlobalURL,
+		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
 		}
 	}
 }
-func SitemapGZHandler() http.HandlerFunc {
+func SitemapGZHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		w.Header().Set("Content-Type", "application/xml")
 		w.Header().Set("Content-Encoding", "gzip")
 		gz := gzip.NewWriter(w)
 		defer gz.Close()
-		err := SitemapTemplate.Execute(gz, nil)
+		err := SitemapTemplate.Execute(gz, map[string]any{
+			"GlobalURL": cfg.GlobalURL,
+		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
 		}
 	}
 }
 
-func SitemapIndexHandler() http.HandlerFunc {
+func SitemapIndexHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		w.Header().Set("Content-Type", "application/xml")
-		err := SitemapIndexTemplate.Execute(w, nil)
+		err := SitemapIndexTemplate.Execute(w, map[string]any{
+			"GlobalURL": cfg.GlobalURL,
+		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
 		}
 	}
 }
-func RobotsTXTHandler() http.HandlerFunc {
+func RobotsTXTHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		w.Header().Set("Content-Type", "text/plain")
-		err := RobotsTXTTemplate.Execute(w, nil)
+		err := RobotsTXTTemplate.Execute(w, map[string]any{
+			"GlobalURL": cfg.GlobalURL,
+		})
 		if err != nil {
 			slog.Error("failed to execute template", slog.Any("error", err))
 		}

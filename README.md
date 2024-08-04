@@ -30,4 +30,8 @@ database_sslmode: disable
 
 # Show a github sponsors message for Zaprit on search results (if you're self hosting you probably don't want this, idk)
 show_sponsor_message: true
+
+# Add something to the header of the page, for things like analytics
+header_injection: |
+  <script src="https://some-analytics.com/idk" />
 ```

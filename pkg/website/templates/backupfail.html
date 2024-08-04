@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LBP Search Facility - Backup Failure</title>
+
+    <link rel="stylesheet" href="/static/main.css">
+    {{.HeaderInjection}}
+    <script>document.addEventListener('DOMContentLoaded', function () { plausible('backupFail', { props: { path: document.location.pathname } }); });</script>
+</head>
+<body>
+<div>
+
+    <h3 class="centre nodeco header"><a class="nodeco" href="/">LittleBigPlanet™ Archive Search utility</a></h3>
+</div>
+<hr>
+
+<h1 class="header">Backup failed</h1>
+
+<p>
+    An error occurred while trying to create a backup for {{.LevelName}}({{.LevelID}}).
+    This could be for a variety of reasons, including corrupt rootLevel, or a bug in the archival code (most likely).
+
+    If you either email me at <a href="mailto:someone@example.com">&lt;zaprit@zaprit.fish&gt;</a>
+    or create an issue on the GitHub I'll look into the problem and get it fixed ASAP.
+
+    Sorry for the inconvenience.
+</p>
+
+Request ID: <span class="code">{{.RequestID}}</span>
+</body>
+</html>

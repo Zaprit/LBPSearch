@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/HugeSpaceship/HugeSpaceship v0.0.0-20240429212803-6d1e7300879d
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/google/uuid v1.6.0
 	github.com/klauspost/compress v1.17.8
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.7
