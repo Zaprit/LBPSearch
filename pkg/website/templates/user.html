@@ -42,7 +42,7 @@
     </tr>
     {{ range $l := .Results }}
     <tr>
-        <td><a class="table-link" href="/slot/{{ $l.ID }}"><img style="width:128px;" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'"/></a></td>
+        <td><a class="table-link" href="/slot/{{ $l.ID }}"><img style="width:128px;" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'" loading="lazy"/></a></td>
         <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.ID }}</a></td>
         <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Name }}</a></td>
         <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Description }}</a></td>
