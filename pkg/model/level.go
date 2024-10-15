@@ -17,6 +17,7 @@ type Slot struct {
 	Icon             string `gorm:"-"`
 	RootLevel        []byte `gorm:"column:rootLevel"`
 	RootLevelStr     string `gorm:"-"`
+	MissingRootLevel bool
 }
 
 func (Slot) TableName() string {

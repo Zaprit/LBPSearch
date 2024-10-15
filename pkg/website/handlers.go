@@ -5,16 +5,17 @@ import (
 	"LBPDumpSearch/pkg/db"
 	"LBPDumpSearch/pkg/model"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/gzip"
 	"gorm.io/gorm"
 	"html/template"
-	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -347,6 +348,8 @@ func ChangelogHandler(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+var ArchiveDownloadPool = sync.Pool{}
+
 func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
@@ -374,20 +377,39 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 			return
 		}
 
-		f, err := DownloadArchive(requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
+		f, mTime, fName, err := DownloadArchive(requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
 		if err != nil {
+			if errors.Is(err, MissingRootLevel) {
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.WriteHeader(http.StatusNotFound)
+				BackupFailTemplate.Execute(w, map[string]any{
+					"LevelName":       slot.Name,
+					"LevelID":         id,
+					"HeaderInjection": template.HTML(cfg.HeaderInjection),
+					"RequestID":       requestID.String(),
+					"Message":         template.HTML("The specified level's rootLevel (the primary resource that contains the required information for an LBP level) could not be found in the archive. Unfortunately this means that the level cannot be downloaded.<br>Sorry for the inconvenience."),
+					"FailType":        "missingRootLevel",
+				})
+				slot.MissingRootLevel = true
+				conn.Save(&slot)
+			}
+
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
 			BackupFailTemplate.Execute(w, map[string]any{
 				"LevelName":       slot.Name,
 				"LevelID":         id,
 				"HeaderInjection": template.HTML(cfg.HeaderInjection),
+				"RequestID":       requestID.String(),
 			})
 			return
 		}
-		w.Header().Set("Content-Type", "application/zip")
+
 		w.Header().Set("Cache-Control", "max-age=604800, public")
-		io.Copy(w, f)
+		w.Header().Set("Content-Type", "application/zip")
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+fName+"\"")
+		http.ServeContent(w, r, fName, mTime, f)
+
 		f.Close()
 	}
 }

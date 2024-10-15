@@ -2,11 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    {{ if .ShortMessage }}
+    <title>LBP Search Facility - {{.ShortMessage}}</title>
+    {{else}}
     <title>LBP Search Facility - Backup Failure</title>
+    {{end}}
+
 
     <link rel="stylesheet" href="/static/main.css">
     {{.HeaderInjection}}
+    {{ if .FailType }}
+    <script>document.addEventListener('DOMContentLoaded', function () { plausible('{{.FailType}}', { props: { path: document.location.pathname } }); });</script>
+    {{ else }}
     <script>document.addEventListener('DOMContentLoaded', function () { plausible('backupFail', { props: { path: document.location.pathname } }); });</script>
+    {{ end }}
 </head>
 <body>
 <div>
@@ -15,15 +24,27 @@
 </div>
 <hr>
 
-<h1 class="header">Backup failed</h1>
+<h1 class="header">
+    {{ if .ShortMessage }}
+    {{.ShortMessage}}
+    {{else}}
+    Backup failed
+    {{end}}
+</h1>
 
 <p>
+    {{ if .Message }}
     An error occurred while trying to create a backup for {{.LevelName}}({{.LevelID}}).
+    The message below explains what happened in detail:
+
+    {{ .Message }}
+    {{ else }}
+    An unknown error occurred while trying to create a backup for {{.LevelName}}({{.LevelID}}).
     This could be for a variety of reasons, including corrupt rootLevel, or a bug in the archival code (most likely).
 
     If you either email me at <a href="mailto:someone@example.com">&lt;zaprit@zaprit.fish&gt;</a>
-    or create an issue on the GitHub I'll look into the problem and get it fixed ASAP.
-
+    or create an issue on the GitHub I'll look into the problem and get it fixed ASAP, please include the request ID below, so I can more easily locate your issue.
+    {{ end }}
     Sorry for the inconvenience.
 </p>
 

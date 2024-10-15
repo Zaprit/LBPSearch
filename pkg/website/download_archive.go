@@ -1,6 +1,7 @@
 package website
 
 import (
+	"errors"
 	"fmt"
 	"github.com/klauspost/compress/zip"
 	"io"
@@ -11,38 +12,53 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadCloser, error) {
+var MissingRootLevel = errors.New("rootLevel is missing from archive, rip")
+
+func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSeekCloser, time.Time, string, error) {
 
 	if f, err := os.Open(cachePath + "/levels/" + id + ".zip"); err == nil {
 		fmt.Println("returning cached level " + id)
-		return f, nil
+		fi, _ := f.Stat()
+		zw, err := zip.NewReader(f, fi.Size())
+		if err != nil {
+			panic(err)
+		}
+		return f, fi.ModTime(), strings.ReplaceAll(zw.File[0].Name, "/", "") + ".zip", nil
 	}
 
-	logFile, err := os.OpenFile(path.Join(cachePath, "levellogs", id+".log"), os.O_WRONLY|os.O_CREATE, 0644)
+	logFile, err := os.OpenFile(path.Join(cachePath, "levellogs", id+"-"+requestID+".log"), os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer logFile.Close()
 	cmd := exec.Command(dlCommandPath, "bkp", id)
+	cmd.Env = append(cmd.Env, "RUST_BACKTRACE=1")
 	cmd.Dir = cachePath
 	cmd.Stderr = logFile
 
 	out, err := cmd.Output()
 	if err != nil {
+		if eerr, ok := err.(*exec.ExitError); ok {
+			if strings.Contains(string(eerr.Stderr), "rootLevel is missing from the archive, rip") {
+				slog.Error("RootLevel is missing from archive, rip", "id", id)
+				return nil, time.Time{}, "", MissingRootLevel
+			}
+		}
+
 		slog.Error("Failed to create backup, please check logs.", "id", id, "err", err, "requestID", requestID)
-		return nil, err
+		return nil, time.Time{}, "", err
 	}
 
 	slog.Info("Backup created", "id", string(out))
 
 	f, err := os.OpenFile(path.Join(cachePath, "/levels/"+id+".zip"), os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, err
+		return nil, time.Time{}, "", err
 	}
 
-	fmt.Println(string(out))
 	zw := zip.NewWriter(f)
 
 	err = filepath.WalkDir(path.Join(cachePath, "backups", string(out)), func(p string, d fs.DirEntry, err error) error {
@@ -50,10 +66,18 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadClo
 			return err
 		}
 
+		zipFileName := strings.TrimPrefix(p, path.Clean(cachePath+"/backups/")+"/")
+		header := zip.FileHeader{
+			Name:     zipFileName,
+			Method:   zip.Deflate,
+			Modified: time.Now(),
+		}
+
 		if d.IsDir() {
-			zw.Create(strings.TrimPrefix(p, path.Clean(cachePath+"/backups/")) + "/")
+			header.Name += "/"
+			zw.CreateHeader(&header)
 		} else {
-			f, err := zw.Create(strings.TrimPrefix(p, path.Clean(cachePath+"/backups/")))
+			f, err := zw.CreateHeader(&header)
 			if err != nil {
 				return err
 			}
@@ -72,9 +96,10 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadClo
 	zw.SetComment("LBP Level Archive from zaprit.fish")
 	err = zw.Close()
 	if err != nil {
-		return nil, err
+		return nil, time.Time{}, "", err
 	}
 	f.Sync()
 	f.Seek(0, 0)
-	return f, err
+
+	return f, time.Now(), strings.ReplaceAll(string(out), "/", "") + ".zip", err
 }
