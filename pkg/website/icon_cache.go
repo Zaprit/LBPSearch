@@ -5,15 +5,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils/file_utils/lbp_image"
-	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
-	"github.com/klauspost/compress/zip"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/utils/file_utils/lbp_image"
+	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
+	"github.com/klauspost/compress/zip"
 )
 
 func IconHandler(cfg *config.Config) http.HandlerFunc {
@@ -28,7 +29,7 @@ func IconHandler(cfg *config.Config) http.HandlerFunc {
 		}
 
 		if len(hash) != 40 { // Not a hash
-			utils.HttpLog(w, http.StatusNotFound, "Image not found")
+			http.Redirect(w, r, "/static/placeholder.png", http.StatusMovedPermanently)
 			return
 		}
 
@@ -53,7 +54,7 @@ func IconHandler(cfg *config.Config) http.HandlerFunc {
 			utils.HttpLog(w, http.StatusUnsupportedMediaType, "Not an image")
 			return
 		} else if err != nil {
-			utils.HttpLog(w, http.StatusNotFound, "Image not found")
+			http.Redirect(w, r, "/static/placeholder.png", http.StatusMovedPermanently)
 			slog.Error("failed to load image", slog.Any("error", err), slog.String("hash", hash))
 			return
 		}

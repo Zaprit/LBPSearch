@@ -161,6 +161,17 @@ table, td, th {
     object-fit: cover;
 }
 
+.table-icon {
+    min-width: 100px; 
+    width: 100px; 
+    height: 100px;
+    margin-right: 10px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 100%;
+    object-fit: cover;
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         background-color: rgb(30, 31, 62);

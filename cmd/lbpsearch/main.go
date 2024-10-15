@@ -6,13 +6,14 @@ import (
 	"LBPDumpSearch/pkg/website"
 	_ "embed"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"html/template"
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/go-chi/chi/v5"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 //go:embed CHANGELOG
@@ -96,6 +97,12 @@ func main() {
 		w.Header().Set("Content-Type", "image/png")
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 		http.ServeFileFS(w, r, website.Static, "static/refresh.png")
+	})
+
+	r.Get("/static/placeholder.png", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "max-age=604800, public")
+		http.ServeFileFS(w, r, website.Static, "static/placeholder.png")
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
