@@ -149,3 +149,19 @@ func getImageFromJvyden(hash, cachePath string) (io.Reader, error) {
 
 	return buf, nil
 }
+
+func resourceExists(hash string) bool {
+	req, err := http.NewRequest(http.MethodHead, "https://lbp.littlebigrefresh.com/api/v3/assets/"+hash+"/download", nil)
+	if err != nil {
+		return false
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return false
+	}
+	return true
+}

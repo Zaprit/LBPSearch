@@ -377,6 +377,28 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 			return
 		}
 
+		if !resourceExists(slot.RootLevelStr) {
+			slot.MissingRootLevel = true
+			conn.Save(&slot)
+		}
+
+		if slot.MissingRootLevel {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusNotFound)
+			BackupFailTemplate.Execute(w, map[string]any{
+				"LevelName":       slot.Name,
+				"LevelID":         id,
+				"HeaderInjection": template.HTML(cfg.HeaderInjection),
+				"RequestID":       requestID.String(),
+				"Message":         template.HTML("The specified level's rootLevel (the primary resource that contains the required information for an LBP level) could not be found in the archive. Unfortunately this means that the level cannot be downloaded.<br>Sorry for the inconvenience."),
+				"FailType":        "missingRootLevel",
+			})
+			if err != nil {
+				slog.Error("failed to execute template", slog.Any("error", err))
+			}
+			return
+		}
+
 		f, mTime, fName, err := DownloadArchive(requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
 		if err != nil {
 			if errors.Is(err, MissingRootLevel) {
