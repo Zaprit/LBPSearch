@@ -41,11 +41,13 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSee
 
 	out, err := cmd.Output()
 	if err != nil {
-		if eerr, ok := err.(*exec.ExitError); ok {
-			if strings.Contains(string(eerr.Stderr), "rootLevel is missing from the archive, rip") {
-				slog.Error("RootLevel is missing from archive, rip", "id", id)
-				return nil, time.Time{}, "", MissingRootLevel
-			}
+
+		logFile.Seek(0, 0)
+		log, _ := io.ReadAll(logFile)
+		fmt.Println(string(log))
+		if strings.Contains(string(log), "rootLevel is missing from the archive, rip") {
+			slog.Error("RootLevel is missing from archive, rip", "id", id)
+			return nil, time.Time{}, "", MissingRootLevel
 		}
 
 		slog.Error("Failed to create backup, please check logs.", "id", id, "err", err, "requestID", requestID)

@@ -27,6 +27,15 @@
     <div>
         <span class="code">{{.Result.RootLevelStr}}</span>
     </div>
+    {{ if .Result.MissingRootLevel }}
+    <div class="toast">
+        <h2>Missing Root Level</h2>
+        <p>
+            The Root Level for this level is known to be missing from the archive, the archive download function likely won't work.
+        </p>
+    </div>
+    {{ end }}
+
     <br>
 <img src="/icon/{{.Result.Icon}}" alt="Level Icon" aria-hidden="true" onerror="this.style.display='none'">
     <br>

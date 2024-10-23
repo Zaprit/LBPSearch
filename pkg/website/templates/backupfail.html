@@ -35,17 +35,20 @@
 <p>
     {{ if .Message }}
     An error occurred while trying to create a backup for {{.LevelName}}({{.LevelID}}).
+    <br>
     The message below explains what happened in detail:
-
+    <br>
     {{ .Message }}
     {{ else }}
     An unknown error occurred while trying to create a backup for {{.LevelName}}({{.LevelID}}).
     This could be for a variety of reasons, including corrupt rootLevel, or a bug in the archival code (most likely).
-
+    <br>
     If you either email me at <a href="mailto:someone@example.com">&lt;zaprit@zaprit.fish&gt;</a>
     or create an issue on the GitHub I'll look into the problem and get it fixed ASAP, please include the request ID below, so I can more easily locate your issue.
-    {{ end }}
+    <br>
     Sorry for the inconvenience.
+    {{ end }}
+
 </p>
 
 Request ID: <span class="code">{{.RequestID}}</span>
