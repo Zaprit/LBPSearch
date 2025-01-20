@@ -84,6 +84,7 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSee
 				return err
 			}
 			src, err := os.Open(p)
+			defer src.Close()
 			if err != nil {
 				return err
 			}
@@ -102,6 +103,8 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSee
 	}
 	f.Sync()
 	f.Seek(0, 0)
+
+	os.RemoveAll(path.Join(cachePath, "backups", string(out)))
 
 	return f, time.Now(), strings.ReplaceAll(string(out), "/", "") + ".zip", err
 }
