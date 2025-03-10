@@ -1,12 +1,13 @@
-package website
+package website_old
 
 import (
-	"LBPDumpSearch/pkg/config"
-	"LBPDumpSearch/pkg/db"
-	"LBPDumpSearch/pkg/model"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Zaprit/LBPSearch/pkg/config"
+	"github.com/Zaprit/LBPSearch/pkg/db"
+	"github.com/Zaprit/LBPSearch/pkg/model"
+	"github.com/Zaprit/LBPSearch/pkg/storage"
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/gzip"
 	"gorm.io/gorm"
@@ -15,7 +16,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -36,22 +36,18 @@ func IndexHandler(cfg *config.Config) http.HandlerFunc {
 }
 
 // SearchHandler uses the same page as IndexHandler however it does a lot of processing to search for levels
-func SearchHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
+func SearchHandler(conn *db.Queries, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
-		slots := make([]model.Slot, 0)
-		// Total number of matching levels
-		var count int64
 
-		var page *uint64 = nil
+		var page uint64 = 0
 		if pString := r.URL.Query().Get("page"); pString != "" {
 			p, err := strconv.ParseUint(pString, 10, 64)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				_, _ = w.Write([]byte("Bad Page Number"))
 			}
-			page = new(uint64)
-			*page = p
+			page = p
 		}
 
 		unescapedquery, err := url.QueryUnescape(r.URL.Query().Get("s"))
@@ -72,66 +68,52 @@ func SearchHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 
 		sort := r.URL.Query().Get("sort")
 
-		// TODO: move DB queries out of web handler, this is bad practice.
-
-		where := "(\"npHandle\" ILIKE ?) OR (name ILIKE ?) OR (description ILIKE ?)"
-		whereArr := []interface{}{query, query, query}
-		authorSort := false
-		if sort == "author" {
-			where = "\"npHandle\" ILIKE ?"  // Just override for author, this is janky.
-			whereArr = []interface{}{query} // I hate this dearly
-			authorSort = true
-		}
-
-		count = db.GetCount(conn, query, authorSort)
-
-		q := conn.Limit(50)
-		if page != nil {
-			q = conn.Offset(int((*page) * 50)).Limit(50)
-		}
-
-		q = q.Where(where, whereArr...)
-
-		invert := false
+		direction := "DESC"
 
 		if r.URL.Query().Get("invert") == "on" {
-			invert = true
+			direction = "ASC"
 		}
 
-		switch sort {
-		case "name":
-			q = q.Order("name ASC")
-		case "author":
-			q = q.Order("\"npHandle\"")
-		case "hearts":
-			if invert {
-				q = q.Order("\"heartCount\" ASC")
-			} else {
-				q = q.Order("\"heartCount\" DESC")
-			}
-		case "published":
-			if invert {
-				q = q.Order("\"firstPublished\" DESC")
-			} else {
+		// TODO: move DB queries out of web handler, this is bad practice.
 
-			}
+		var results []db.Slot
 
-		case "updated":
+		results, err = conn.GetSlotsSort(r.Context(), db.GetSlotsSortParams{
+			SearchQuery:     query,
+			SearchColumn:    sort,
+			SearchDirection: direction,
+			SearchOffset:    int32(page * 50),
+		})
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			slog.Error("failed to execute template", slog.Any("error", err))
 		}
 
-		q.Find(&slots)
+		slots := make([]model.Slot, len(results))
+		for i, result := range results {
+			slots[i] = model.Slot{
+				ID:               uint64(result.ID),
+				Name:             result.Name,
+				Description:      result.Description,
+				NpHandle:         result.NpHandle,
+				HeartCount:       uint64(result.HeartCount),
+				Background:       result.Background,
+				RootLevel:        result.RootLevel,
+				RootLevelStr:     hex.EncodeToString(result.RootLevel),
+				MissingRootLevel: result.MissingRootLevel,
+			}
 
-		for i, slot := range slots {
-			slots[i].FirstPublished = time.UnixMilli(int64(slot.FirstPublishedDB)).Format(time.DateTime)
-			slots[i].LastUpdated = time.UnixMilli(int64(slot.LastUpdatedDB)).Format(time.DateTime)
+			slots[i].FirstPublished = time.UnixMilli(result.FirstPublished).Format(time.DateTime)
+			slots[i].LastUpdated = time.UnixMilli(result.LastUpdated).Format(time.DateTime)
 
-			if slot.Name == "" {
+			if result.Name == "" {
 				slots[i].Name = "Unnamed Level"
 			}
 
 			// The data in the backup was inconsistent with this, some levels had the game field filled out, some had the UploadedIn filled out
-			if slot.UploadedIn == "" {
-				switch slot.Game {
+			if result.PublishedIn == "" {
+				switch result.Game {
 				case 0:
 					slots[i].UploadedIn = "LittleBigPlanet"
 				case 1:
@@ -141,7 +123,7 @@ func SearchHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 
 				}
 			} else {
-				switch slot.UploadedIn {
+				switch result.PublishedIn {
 				case "lbp2":
 					slots[i].UploadedIn = "LittleBigPlanet 2"
 				case "lbp3ps3":
@@ -151,44 +133,36 @@ func SearchHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
 				}
 			}
 
-			slots[i].Icon = hex.EncodeToString(slot.IconDB) // Icon is conveniently stored as a bytea (BLOB in sqlite) in the archive, this sucks for sending the thing out but what can you do.
+			slots[i].Icon = hex.EncodeToString(result.Icon) // Icon is conveniently stored as a bytea (BLOB in sqlite) in the archive, this sucks for sending the thing out but what can you do.
 		}
 		// TODO: improve logging, make it quieter where needed and more informative everywhere else.
 		slog.Info("New Query",
 			slog.String("query", r.URL.Query().Get("s")),
 			slog.String("type", r.URL.Query().Get("t")),
-			slog.Int64("totalCount", count),
 			slog.Int("count", len(slots)),
 		)
 
 		data := map[any]any{
 			"HasResults":      true,
 			"Results":         slots,
-			"SearchType":      r.URL.Query().Get("t"),
+			"SearchType":      r.URL.Query().Get("sort"),
 			"SearchQuery":     r.URL.Query().Get("s"),
-			"ResultCount":     count,
 			"Failed":          false,
 			"Elapsed":         time.Since(startTime).Round(time.Millisecond).String(),
 			"GlobalURL":       cfg.GlobalURL,
 			"HeaderInjection": template.HTML(cfg.HeaderInjection),
+			"Page":            page + 1,
 		}
 
 		// TODO: come up with better way of paginating, as the current count based method is slow, like really slow, like wtf why is this so slow levels of slow.
-		if count > 50 {
-			data["MaxPage"] = int(float64(count)/50) + 1
-			if page != nil {
-				data["Page"] = *page
-			} else {
-				data["Page"] = 0
-				page = new(uint64)
-			}
-			if *page > 0 {
-				data["PrevPage"] = *page - 1
-			}
-			if *page < uint64(int(float64(count)/50)+1) {
-				data["NextPage"] = *page + 1
-			}
+		if len(results) == 50 {
+			data["Page"] = page
+			data["NextPage"] = page + 1
 		}
+		if page > 0 {
+			data["PrevPage"] = page - 1
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "max-age=604800, public")
 
@@ -348,9 +322,7 @@ func ChangelogHandler(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-var ArchiveDownloadPool = sync.Pool{}
-
-func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc {
+func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config, backend storage.LevelCacheBackend) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		_, err := strconv.ParseInt(id, 10, 64)
@@ -377,7 +349,7 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 			return
 		}
 
-		f, mTime, fName, err := DownloadArchive(requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
+		url, err := DownloadArchive(r.Context(), backend, requestID.String(), id, cfg.CachePath, cfg.ArchiveDlCommandPath)
 		if err != nil {
 			if errors.Is(err, MissingRootLevel) {
 				fmt.Println("Failed to download archive", slog.Any("error", err))
@@ -398,12 +370,7 @@ func DownloadArchiveHandler(conn *gorm.DB, cfg *config.Config) http.HandlerFunc 
 			return
 		}
 
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		w.Header().Set("Content-Type", "application/zip")
-		w.Header().Set("Content-Disposition", "attachment; filename=\""+fName+"\"")
-		http.ServeContent(w, r, fName, mTime, f)
-
-		f.Close()
+		http.Redirect(w, r, url, http.StatusFound)
 	}
 }
 

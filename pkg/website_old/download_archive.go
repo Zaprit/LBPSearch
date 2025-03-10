@@ -1,8 +1,11 @@
-package website
+package website_old
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"github.com/Zaprit/LBPSearch/pkg/storage"
 	"github.com/klauspost/compress/zip"
 	"io"
 	"io/fs"
@@ -17,16 +20,20 @@ import (
 
 var MissingRootLevel = errors.New("rootLevel is missing from archive, rip")
 
-func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSeekCloser, time.Time, string, error) {
+func DownloadArchive(ctx context.Context, backend storage.LevelCacheBackend, requestID, id, cachePath, dlCommandPath string) (string, error) {
 
-	if f, err := os.Open(cachePath + "/levels/" + id + ".zip"); err == nil {
-		fmt.Println("returning cached level " + id)
-		fi, _ := f.Stat()
-		zw, err := zip.NewReader(f, fi.Size())
+	hasLevel, err := backend.HasLevel(ctx, id)
+	if err != nil {
+		return "", err
+	}
+
+	if hasLevel {
+		slog.Info("returning cached archive", "requestID", requestID, "id", id)
+		url, err := backend.GetLevelURL(ctx, id)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
-		return f, fi.ModTime(), strings.ReplaceAll(zw.File[0].Name, "/", "") + ".zip", nil
+		return url, nil
 	}
 
 	logFile, err := os.OpenFile(path.Join(cachePath, "levellogs", id+"-"+requestID+".log"), os.O_WRONLY|os.O_CREATE, 0644)
@@ -47,21 +54,18 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSee
 		fmt.Println(string(log))
 		if strings.Contains(string(log), "rootLevel is missing from the archive, rip") {
 			slog.Error("RootLevel is missing from archive, rip", "id", id)
-			return nil, time.Time{}, "", MissingRootLevel
+			return "", MissingRootLevel
 		}
 
 		slog.Error("Failed to create backup, please check logs.", "id", id, "err", err, "requestID", requestID)
-		return nil, time.Time{}, "", err
+		return "", err
 	}
 
 	slog.Info("Backup created", "id", string(out))
 
-	f, err := os.OpenFile(path.Join(cachePath, "/levels/"+id+".zip"), os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		return nil, time.Time{}, "", err
-	}
+	buf := new(bytes.Buffer)
 
-	zw := zip.NewWriter(f)
+	zw := zip.NewWriter(buf)
 
 	err = filepath.WalkDir(path.Join(cachePath, "backups", string(out)), func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -99,12 +103,20 @@ func DownloadArchive(requestID, id, cachePath, dlCommandPath string) (io.ReadSee
 	zw.SetComment("LBP Level Archive from zaprit.fish")
 	err = zw.Close()
 	if err != nil {
-		return nil, time.Time{}, "", err
+		return "", err
 	}
-	f.Sync()
-	f.Seek(0, 0)
+
+	err = backend.PutLevel(ctx, id, buf)
+	if err != nil {
+		return "", err
+	}
 
 	os.RemoveAll(path.Join(cachePath, "backups", string(out)))
 
-	return f, time.Now(), strings.ReplaceAll(string(out), "/", "") + ".zip", err
+	url, err := backend.GetLevelURL(ctx, id)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }

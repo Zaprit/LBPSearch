@@ -1,7 +1,7 @@
 package db
 
 import (
-	"LBPDumpSearch/pkg/model"
+	"github.com/Zaprit/LBPSearch/pkg/model"
 	"gorm.io/gorm"
 )
 

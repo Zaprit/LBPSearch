@@ -1,3 +1,13 @@
+<h2>2025-03-10:</h2>
+<p>
+Sorry for the lack of updates, work has taken a lot of my time.
+</p>
+<ul>
+    <li>Search performance improvements</li>
+    <li>S3 Storage Backend, this means that the download speed of things will be faster, and my server won't run out of disk space as much</li>
+    <li>Image conversion improvements. The image converter now supports DXT5, meaning less missing images.</li>
+</ul>
+
 <h2>2024-10-23:</h2>
 <ul>
     <li>Improvements to icon handling, courtesy of <a href="https://github.com/leonwhittle">@leonwhittle</a>

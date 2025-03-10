@@ -1,12 +1,17 @@
 package main
 
 import (
-	"LBPDumpSearch/pkg/config"
-	"LBPDumpSearch/pkg/model"
-	"LBPDumpSearch/pkg/website"
+	"context"
 	_ "embed"
 	"fmt"
+	"github.com/Zaprit/LBPSearch/pkg/config"
+	"github.com/Zaprit/LBPSearch/pkg/db"
+	"github.com/Zaprit/LBPSearch/pkg/model"
+	"github.com/Zaprit/LBPSearch/pkg/storage"
+	"github.com/Zaprit/LBPSearch/pkg/website_old"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"html/template"
+	"mime"
 	"net/http"
 	"os"
 	"path"
@@ -31,11 +36,14 @@ func main() {
 		panic(err)
 	}
 
-	os.MkdirAll(path.Join(cfg.CachePath, "imgcache"), 0755)
-	os.MkdirAll(path.Join(cfg.CachePath, "lvlIcons"), 0755)
+	storageBackend, err := storage.NewS3StorageBackend(cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	os.MkdirAll(path.Join(cfg.CachePath, "levels"), 0755)
 
-	website.Changelog = changelog
+	website_old.Changelog = changelog
 	conn, err := gorm.Open(postgres.Open(fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		cfg.DatabaseHost, cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseName, cfg.DatabasePort, cfg.DatabaseSSLMode)))
 	if err != nil {
@@ -45,6 +53,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	pool, err := pgxpool.New(context.Background(),
+		fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			cfg.DatabaseUser,
+			cfg.DatabasePassword,
+			cfg.DatabaseHost,
+			cfg.DatabasePort,
+			cfg.DatabaseName,
+			cfg.DatabaseSSLMode),
+	)
+	if err != nil {
+		panic(err)
+	}
+	queries := db.New(pool)
 
 	//err = db2.AutoMigrate(&model.Slot{})
 	//if err != nil {
@@ -67,47 +89,31 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Get("/", website.IndexHandler(cfg))
-	r.Get("/search", website.SearchHandler(conn, cfg))
-	r.Get("/user/{npHandle}", website.UserHandler(conn, cfg))
-	r.Get("/slot/{slotID}", website.SlotHandler(conn, cfg))
-	r.Get("/icon/{hash}", website.IconHandler(cfg))
-	r.Get("/changelog", website.ChangelogHandler(cfg))
-	r.Get("/dl_archive/{id}", website.DownloadArchiveHandler(conn, cfg))
-	r.Get("/sitemap_other.xml", website.SitemapHandler(cfg))
-	r.Get("/sitemap_other.xml.gz", website.SitemapGZHandler(cfg))
-	r.Get("/sitemap.xml", website.SitemapIndexHandler(cfg))
-	r.Get("/robots.txt", website.RobotsTXTHandler(cfg))
-	r.Get("/static/main.css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		http.ServeFileFS(w, r, website.Static, "static/main.css")
-	})
-	r.Get("/static/JetBrainsMono-Regular.woff2", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "font/woff2")
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		http.ServeFileFS(w, r, website.Static, "static/JetBrainsMono-Regular.woff2")
-	})
-	r.Get("/static/refresh.svg", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/svg+xml")
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		http.ServeFileFS(w, r, website.Static, "static/refresh.svg")
-	})
-	r.Get("/static/refresh.png", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/png")
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		http.ServeFileFS(w, r, website.Static, "static/refresh.png")
-	})
+	r.Get("/", website_old.IndexHandler(cfg))
+	r.Get("/search", website_old.SearchHandler(queries, cfg))
+	r.Get("/user/{npHandle}", website_old.UserHandler(conn, cfg))
+	r.Get("/slot/{slotID}", website_old.SlotHandler(conn, cfg))
+	r.Get("/icon/{hash}", website_old.IconHandler(storageBackend, storageBackend))
+	r.Get("/changelog", website_old.ChangelogHandler(cfg))
+	r.Get("/dl_archive/{id}", website_old.DownloadArchiveHandler(conn, cfg, storageBackend))
+	r.Get("/sitemap_other.xml", website_old.SitemapHandler(cfg))
+	r.Get("/sitemap_other.xml.gz", website_old.SitemapGZHandler(cfg))
+	r.Get("/sitemap.xml", website_old.SitemapIndexHandler(cfg))
+	r.Get("/robots.txt", website_old.RobotsTXTHandler(cfg))
 
-	r.Get("/static/placeholder.png", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/png")
-		w.Header().Set("Cache-Control", "max-age=604800, public")
-		http.ServeFileFS(w, r, website.Static, "static/placeholder.png")
-	})
+	fs := http.FileServerFS(website_old.Static)
+	r.Handle("/static/*", http.StripPrefix("/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "max-age=604800, public")
+			// Truly, one of the lines of all time
+			w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
+			fs.ServeHTTP(w, r)
+		}),
+	))
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		website.NotFoundTemplate.Execute(w, map[string]interface{}{
+		website_old.NotFoundTemplate.Execute(w, map[string]interface{}{
 			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 			"Level":           false,
 		})

@@ -7,9 +7,7 @@ import (
 
 type Config struct {
 	// add struct tags to specify the name of the key in the YAML file
-	CachePath            string `yaml:"cache_path"`
 	GlobalURL            string `yaml:"global_url"`
-	ArchivePath          string `yaml:"archive_path"`
 	ArchiveDlCommandPath string `yaml:"archive_dl_command_path"`
 
 	DatabaseName     string `yaml:"database_name"`
@@ -22,6 +20,19 @@ type Config struct {
 	ShowSponsorMessage bool `yaml:"show_sponsor_message"`
 
 	HeaderInjection string `yaml:"header_injection"`
+
+	ArchiveBackend string `yaml:"storage_backend"`
+	CacheBackend   string `yaml:"cache_backend"`
+
+	CachePath   string `yaml:"cache_path"`
+	ArchivePath string `yaml:"archive_path"`
+
+	S3Endpoint    string `yaml:"s3_endpoint"`
+	S3AccessKey   string `yaml:"s3_access_key"`
+	S3SecretKey   string `yaml:"s3_secret_key"`
+	ArchiveBucket string `yaml:"archive_bucket"`
+	CacheBucket   string `yaml:"cache_bucket"`
+	S3Region      string `yaml:"s3_region"`
 }
 
 // LoadConfig reads the configuration file and returns a Config struct.

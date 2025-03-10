@@ -1,8 +1,8 @@
 package main
 
 import (
-	"LBPDumpSearch/pkg/model"
 	"fmt"
+	"github.com/Zaprit/LBPSearch/pkg/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

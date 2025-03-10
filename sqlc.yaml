@@ -1,0 +1,34 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "pkg/db/queries.sql"
+    schema: "pkg/db/schema.sql"
+    gen:
+      go:
+        package: "db"
+        out: "pkg/db/"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "text"
+            go_type:
+              type: "string"
+              pointer: false
+            nullable: true
+
+          - db_type: "pg_catalog.int8"
+            go_type:
+              type: "int64"
+              pointer: false
+            nullable: true
+
+          - db_type: "pg_catalog.int2"
+            go_type:
+              type: "int16"
+              pointer: false
+            nullable: true
+
+          - db_type: "pg_catalog.bool"
+            go_type:
+              type: "bool"
+              pointer: false
+            nullable: true

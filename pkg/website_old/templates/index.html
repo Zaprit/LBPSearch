@@ -23,8 +23,8 @@
         <input id="query" type="text" name="s" placeholder="Search for a level" />
         <br>
         <label for="sort">Sort</label><select name="sort" id="sort">
-            <option value="name">Level Name</option>
             <option value="hearts">Hearts</option>
+            <option value="name">Level Name</option>
             <option value="author">Author</option>
         </select>
         <label for="invert">Invert Sort</label><input name="invert" id="invert" type="checkbox" />
@@ -33,8 +33,7 @@
     </form>
 
     {{ if .HasResults }}
-        {{ if (gt .ResultCount 0) }}
-            <h2 class="header">Found {{ .ResultCount }} Levels In {{ .Elapsed}}</h2>
+            <h2 class="header">Found Levels In {{ .Elapsed}}</h2>
             <table>
                 <tr>
                     <th>Icon</th>
@@ -66,26 +65,24 @@
                 {{ end }}
 
             </table>
-            {{ if (gt .ResultCount 50) }}
-                <span>Page {{len (printf "a%*s" .Page "")}}/{{.MaxPage}}</span>
-                <br>
+            <span>Page {{.Page}}</span>
+            <br>
 
-                {{ if (gt .Page 0) }}
-                <a href="/search?s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
-                {{else}}
-                <span style="color: gray">Previous Page</span>
-                {{ end }}
+            {{ if .PrevPage }}
+            <a href="/search?s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
+            {{else}}
+            <span style="color: gray">Previous Page</span>
+            {{ end }}
 
-                {{ if (lt .Page .MaxPage) }}
-                <a href="/search?s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
-                {{ else }}
-                <span style="color: gray">Next Page</span>
-                {{ end }}
+            {{ if .NextPage }}
+            <a href="/search?s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
+            {{ else }}
+            <span style="color: gray">Next Page</span>
             {{ end }}
         {{ else }}
            <h2>No levels found, unfortunately</h2>
         {{ end }}
-    {{ end }}
+
 <footer>
     <div class="shameless-plug">
         <a href="/changelog">Changelog</a>
