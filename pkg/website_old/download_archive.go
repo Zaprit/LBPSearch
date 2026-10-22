@@ -36,7 +36,7 @@ func DownloadArchive(ctx context.Context, backend storage.LevelCacheBackend, req
 		return url, nil
 	}
 
-	logFile, err := os.OpenFile(path.Join(cachePath, "levellogs", id+"-"+requestID+".log"), os.O_WRONLY|os.O_CREATE, 0644)
+	logFile, err := os.OpenFile(path.Join(cachePath, "levellogs", id+"-"+requestID+".log"), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +48,6 @@ func DownloadArchive(ctx context.Context, backend storage.LevelCacheBackend, req
 
 	out, err := cmd.Output()
 	if err != nil {
-
 		logFile.Seek(0, 0)
 		log, _ := io.ReadAll(logFile)
 		fmt.Println(string(log))

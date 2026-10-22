@@ -25,21 +25,29 @@
         <h2 class="header">By <img class="avatar" onerror="this.style.display='none'" alt="user avatar" src="/icon/{{.UserIcon}}"><a href="/user/{{.Result.NpHandle}}">{{.Result.NpHandle}}</a></h2>
 
     <div>
-        <span class="code">{{.Result.RootLevelStr}}</span>
+        <span class="code">{{ .Result.GetRootLevel }}</span>
     </div>
-    {{ if .Result.MissingRootLevel }}
+    {{ if eq .Result.Got 2 }}
+    <div class="toast">
+        <h2>Potentially Missing Resources</h2>
+        <p>
+            This level is missing some resources, it probably won't download properly.
+        </p>
+    </div>
+    {{ else if eq .Result.Got 3 }}
     <div class="toast">
         <h2>Missing Root Level</h2>
         <p>
-            The Root Level for this level is known to be missing from the archive, the archive download function likely won't work.
+            This level is missing the root level, and as such can't be downloaded.
         </p>
     </div>
+    {{ else }}
     {{ end }}
 
     <br>
-<img src="/icon/{{.Result.Icon}}" alt="Level Icon" aria-hidden="true" onerror="this.style.display='none'">
+<img src="/icon/{{.Result.GetIcon}}" alt="Level Icon" aria-hidden="true" onerror="this.style.display='none'">
     <br>
-    <a class="play-on-refresh-button" target=”_blank” href="https://lbp.littlebigrefresh.com/playhash?hash={{.Result.RootLevelStr}}">
+    <a class="play-on-refresh-button" target=”_blank” href="https://lbp.littlebigrefresh.com/playhash?hash={{.Result.GetRootLevel}}">
         <img class="refresh-icon" alt="Refresh Logo" aria-hidden="true" src="/static/refresh.svg" onerror="this.src='/static/refresh.png'">
         Play On Refresh
     </a>
@@ -63,16 +71,16 @@
 
     <table>
         <tr>
-            <td>Uploaded in: </td><td>{{.Result.UploadedIn}}</td>
+            <td>Uploaded in: </td><td>{{.Result.GetPublishedIn }}</td>
             </tr>
         <tr>
             <td>Heart count: </td><td>{{.Result.HeartCount}}</td>
         </tr>
         <tr>
-            <td>First published: </td><td>{{.Result.FirstPublished}}</td>
+            <td>First published: </td><td>{{.Result.GetPublished}}</td>
         </tr>
         <tr>
-            <td>Last updated: </td><td>{{.Result.LastUpdated}}</td>
+            <td>Last updated: </td><td>{{.Result.GetUpdated}}</td>
         </tr>
     </table>
 

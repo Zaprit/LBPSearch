@@ -1,0 +1,17 @@
+package components
+
+// TODO: localisation
+templ Header(title, injection string) {
+	<head>
+		<title>{ title }</title>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<!-- <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css"/>-->
+		<link rel="stylesheet" href="/static/fontawesome/css/all.min.css"/>
+		<link rel="stylesheet" href="/static/css/style.css"/>
+		if injection != "" {
+			// Header injection
+			@templ.Raw(injection)
+		}
+	</head>
+}

@@ -35,12 +35,19 @@ func IconHandler(iconStore storage.ResourceStorageBackend, iconCache storage.Ico
 			return
 		}
 		if hasIcon {
-			url, err := iconCache.GetIconURL(r.Context(), hash)
+			img, err := iconCache.GetIcon(r.Context(), hash)
 			if err != nil {
+				slog.Error("failed to fetch icon", "error", err)
 				utils.HttpLog(w, http.StatusInternalServerError, "Failed to get icon URL")
 				return
 			}
-			http.Redirect(w, r, url, http.StatusFound)
+			w.Header().Set("Content-Type", "image/png")
+			w.Header().Set("Cache-Control", "public, max-age=86400")
+			w.WriteHeader(200)
+			_, err = io.Copy(w, img)
+			if err != nil {
+				slog.Error("failed to write icon image", "error", err)
+			}
 			return
 		}
 
@@ -68,8 +75,13 @@ func IconHandler(iconStore storage.ResourceStorageBackend, iconCache storage.Ico
 			return
 		}
 
-		imgURL, err := iconCache.GetIconURL(r.Context(), hash)
-		http.Redirect(w, r, imgURL, http.StatusFound)
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.WriteHeader(200)
+		_, err = io.Copy(w, img)
+		if err != nil {
+			slog.Error("failed to write image", slog.Any("error", err), slog.String("hash", hash))
+		}
 	}
 }
 

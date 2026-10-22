@@ -1,0 +1,59 @@
+:root {
+    --main-background: #d0ced7;
+    --highlight-color: #8f78d6;
+    --text-color: #00000;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --main-background: #100d1c;
+        --secondary-background: #221b3a;
+        --dark-highlight-color: #2e196a;
+        --highlight-color: #542bb6;
+        --text-color: #bdcbcd;
+        --subtle-text-color: #717b7c;
+    }
+}
+
+body {
+    background-color: var(--main-background);
+    color: var(--text-color);
+    font-family: "Courier New", serif;
+}
+
+.search-box {
+    background-color: var(--secondary-background);
+    color: var(--subtle-text-color);
+    border-radius: 10px;
+    border: thin solid var(--highlight-color);
+
+    margin-right: 0;
+    font-size: 2em;
+}
+.search-box:focus {
+    outline-color: var(--dark-highlight-color);
+}
+
+.search-button {
+    background-color: var(--secondary-background);
+    color: var(--subtle-text-color);
+    border: thin solid var(--highlight-color);
+    border-radius: 10px;
+    font-size: 2em;
+    margin-left: 0;
+}
+textarea:focus, input:focus {
+    outline-color: var(--dark-highlight-color);
+}
+
+input[type="search"], textarea, select {
+    outline-color: var(--dark-highlight-color);
+}
+
+.level-icon {
+    min-width: 150px;
+    width: 150px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 100%;
+    object-fit: cover;
+}

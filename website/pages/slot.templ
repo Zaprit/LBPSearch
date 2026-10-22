@@ -1,0 +1,19 @@
+package pages
+
+import "github.com/Zaprit/LBPSearch/pkg/model"
+import "github.com/Zaprit/LBPSearch/website/components"
+
+templ SlotPage(slot model.Slot, headerInjection string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@components.Header(slot.GetName(), headerInjection)
+		<body>
+		@components.TitleBar(true)
+		<main>
+            <h1>{slot.GetName()}</h1>
+            <span>{slot.NpHandle}</span>
+            <p>{slot.Description}</p>
+		</main>
+		</body>
+	</html>
+}

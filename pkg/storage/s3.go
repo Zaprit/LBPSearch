@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"path"
+
 	"github.com/Zaprit/LBPSearch/pkg/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"io"
-	"path"
 )
 
 type S3Storage struct {
@@ -65,8 +66,7 @@ func (s *S3Storage) hasResource(ctx context.Context, bucket, key string) (bool, 
 	})
 
 	if err != nil {
-		var notFound *types.NotFound
-		if errors.As(err, &notFound) {
+		if _, ok := errors.AsType[*types.NotFound](err); ok {
 			return false, nil
 		}
 		return false, err
@@ -120,6 +120,17 @@ func (s *S3Storage) PutIcon(ctx context.Context, hash string, r io.Reader) error
 
 func (s *S3Storage) GetIconURL(ctx context.Context, hash string) (string, error) {
 	return s.getObjectURL(ctx, path.Join("icons/", hash))
+}
+
+func (s *S3Storage) GetIcon(ctx context.Context, hash string) (io.ReadCloser, error) {
+	obj, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.cacheBucket),
+		Key:    aws.String(path.Join("icons/", hash)),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return obj.Body, nil
 }
 
 // FormatURL formats a URL in the same way that the LBP archive does

@@ -13,6 +13,7 @@ type ResourceStorageBackend interface {
 type IconCacheBackend interface {
 	HasIcon(ctx context.Context, hash string) (bool, error)
 	PutIcon(ctx context.Context, hash string, r io.Reader) error
+	GetIcon(ctx context.Context, hash string) (io.ReadCloser, error)
 	GetIconURL(ctx context.Context, hash string) (string, error)
 }
 

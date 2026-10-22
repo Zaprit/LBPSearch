@@ -1,85 +1,116 @@
 package model
 
+import (
+	"encoding/hex"
+	"time"
+)
+
 type Slot struct {
-	ID               uint64 `gorm:"column:id"`
-	Name             string `gorm:"column:name"`
-	Description      string `gorm:"column:description"`
-	NpHandle         string `gorm:"column:npHandle"`
-	UploadedIn       string `gorm:"column:publishedIn"`
-	Game             uint8  `gorm:"column:game"`
-	FirstPublishedDB uint64 `gorm:"column:firstPublished"`
-	LastUpdatedDB    uint64 `gorm:"column:lastUpdated"`
-	FirstPublished   string `gorm:"-"`
-	LastUpdated      string `gorm:"-"`
-	HeartCount       uint64 `gorm:"column:heartCount"`
-	Background       string `gorm:"column:background"`
-	IconDB           []byte `gorm:"column:icon"`
-	Icon             string `gorm:"-"`
-	RootLevel        []byte `gorm:"column:rootLevel"`
-	RootLevelStr     string `gorm:"-"`
-	MissingRootLevel bool
+	ID       uint32 `gorm:"column:id"`
+	NpHandle string `gorm:"column:np_handle"`
+	Author   *User  `gorm:"-"`
+
+	LocationX           int64   `gorm:"column:location_x"`
+	LocationY           int64   `gorm:"column:location_y"`
+	Game                uint8   `gorm:"column:game"`
+	Name                string  `gorm:"column:name"`
+	Description         string  `gorm:"column:description"`
+	RootLevel           []byte  `gorm:"column:root_level"`
+	Icon                []byte  `gorm:"column:icon"`
+	InitiallyLocked     bool    `gorm:"column:initially_locked"`
+	IsSubLevel          bool    `gorm:"column:is_sub_level"`
+	IsLBP1Only          bool    `gorm:"column:is_lbp1_only"`
+	Background          int64   `gorm:"column:background"`
+	Thumbnail           []byte  `gorm:"column:thumbnail"`
+	Shareable           bool    `gorm:"column:shareable"`
+	AuthorLabels        []byte  `gorm:"column:author_labels"`
+	Leveltype           string  `gorm:"column:leveltype"`
+	MinPlayers          uint8   `gorm:"column:min_players"`
+	MaxPlayers          uint8   `gorm:"column:max_players"`
+	IsAdventurePlanet   bool    `gorm:"column:is_adventure_planet"`
+	PS4Only             bool    `gorm:"column:ps4_only"`
+	HeartCount          int64   `gorm:"column:heart_count"`
+	ThumbsUp            int64   `gorm:"column:thumbs_up"`
+	ThumbsDown          int64   `gorm:"column:thumbs_down"`
+	AverageRating       float64 `gorm:"column:average_rating"`
+	MMPick              bool    `gorm:"column:mm_pick"`
+	ReviewCount         int64   `gorm:"column:review_count"`
+	CommentCount        int64   `gorm:"column:comment_count"`
+	PhotoCount          int64   `gorm:"column:photo_count"`
+	AuthorPhotoCount    int64   `gorm:"column:author_photo_count"`
+	Tags                []byte  `gorm:"column:tags"`
+	Labels              []byte  `gorm:"column:labels"`
+	FirstPublished      uint64  `gorm:"column:first_published"`
+	LastUpdated         uint64  `gorm:"column:last_updated"`
+	Genre               string  `gorm:"column:genre"`
+	CommentsEnabled     bool    `gorm:"column:comments_enabled"`
+	ReviewsEnabled      bool    `gorm:"column:reviews_enabled"`
+	PublishedIn         string  `gorm:"column:published_in"`
+	PlayCount           int64   `gorm:"column:play_count"`
+	CompletionCount     int64   `gorm:"column:completion_count"`
+	LBP1PlayCount       int64   `gorm:"column:lbp1_play_count"`
+	LBP1CompletionCount int64   `gorm:"column:lbp1_completion_count"`
+	LBP1UniquePlayCount int64   `gorm:"column:lbp1_unique_play_count"`
+	LBP2PlayCount       int64   `gorm:"column:lbp2_play_count"`
+	LBP2CompletionCount int64   `gorm:"column:lbp2_completion_count"`
+	UniquePlayCount     int64   `gorm:"column:unique_play_count"`
+	LBP3PlayCount       int64   `gorm:"column:lbp3_play_count"`
+	LBP3CompletionCount int64   `gorm:"column:lbp3_completion_count"`
+	LBP3UniquePlayCount int64   `gorm:"column:lbp3_unique_play_count"`
+	Got                 uint8   `gorm:"column:got"`
+
+	Deleted      bool
+	DeletedAt    *time.Time
+	DeleteReason string
+
+	DownloadCount int64
 }
 
-func (Slot) TableName() string {
-	return "slot"
+func (s *Slot) GetRootLevel() string {
+	return hex.EncodeToString(s.RootLevel)
 }
 
-type SearchCache struct {
-	Query      string `gorm:"column:query"`
-	Count      int64  `gorm:"column:count"`
-	AuthorSort bool   `gorm:"column:author_sort"`
+func (s *Slot) GetIcon() string {
+	return hex.EncodeToString(s.Icon)
 }
 
-// ImportSlot is the raw slot from the dry.db archive file
-type ImportSlot struct {
-	ID                  uint32
-	NPHandle            string
-	LocationX           uint16
-	LocationY           uint16
-	Game                uint8
-	Name                *string
-	Description         *string
-	RootLevel           []byte
-	Icon                []byte
-	InitiallyLocked     bool
-	IsSubLevel          bool
-	IsLBP1Only          bool
-	Background          uint32
-	Thumbnail           []byte
-	Shareable           bool
-	AuthorLabels        []byte
-	LevelType           *string
-	MinPlayers          uint8
-	MaxPlayers          uint8
-	IsAdventurePlanet   bool
-	PS4Only             bool
-	HeartCount          uint32
-	ThumbsUp            uint32
-	ThumbsDown          uint32
-	AverageRating       float64
-	MMPick              bool
-	ReviewCount         uint32
-	CommentCount        uint32
-	PhotoCount          uint32
-	AuthorPhotoCount    uint32
-	Tags                []byte
-	Labels              []byte
-	FirstPublished      uint64
-	LastUpdated         uint64
-	Genre               *string
-	CommentsEnabled     bool
-	ReviewsEnabled      bool
-	PublishedIn         *string
-	PlayCount           uint32
-	CompletionCount     uint32
-	LBP1PlayCount       uint32
-	LBP1CompletionCount uint32
-	LBP1UniquePlayCount uint32
-	LBP2PlayCount       uint32
-	LBP2CompletionCount uint32
-	UniquePlayCount     uint32
-	LBP3PlayCount       uint32
-	LBP3CompletionCount uint32
-	LBP3UniquePlayCount uint32
-	Got                 bool
+func (s *Slot) GetName() string {
+	if s.Name == "" {
+		return "Unnamed Level"
+	}
+	return s.Name
+}
+
+func (s *Slot) GetPublishedIn() string {
+	if s.PublishedIn == "" {
+		switch s.Game {
+		case 0:
+			return "LittleBigPlanet"
+		case 1:
+			return "LittleBigPlanet 2"
+		case 2:
+			if s.PS4Only {
+				return "LittleBigPlanet 3 PS4/PS5"
+			}
+			return "LittleBigPlanet 3"
+		}
+	} else {
+		switch s.PublishedIn {
+		case "lbp2":
+			return "LittleBigPlanet 2"
+		case "lbp3ps3":
+			return "LittleBigPlanet 3 PS3"
+		case "lbp3ps4":
+			return "LittleBigPlanet 3 PS4/PS5"
+		}
+	}
+	return "Unknown"
+}
+
+func (s *Slot) GetPublished() string {
+	return time.UnixMilli(int64(s.FirstPublished)).Format(time.DateTime)
+}
+
+func (s *Slot) GetUpdated() string {
+	return time.UnixMilli(int64(s.LastUpdated)).Format(time.DateTime)
 }

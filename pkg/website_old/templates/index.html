@@ -33,55 +33,57 @@
     </form>
 
     {{ if .HasResults }}
-            <h2 class="header">Found Levels In {{ .Elapsed}}</h2>
-            <table>
-                <tr>
-                    <th>Icon</th>
-                    <th>Level ID</th>
-                    <th>Level Name</th>
-                    <th>Level Uploader</th>
-                    <th>Level Description</th>
-                    <th>Uploaded In</th>
-                    <th>First Published</th>
-                    <th>Last Updated</th>
-                    <th>Heart Count (approximate)</th>
-                    <th>Background ID</th>
-                </tr>
-                {{ range $l := .Results }}
-                <tr>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">
-                        <img class="table-icon" src="/icon/{{ $l.Icon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'" loading="lazy"/>
-                    </a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.ID }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Name }}</a></td>
-                    <td><a class="table-link" href="/user/{{ $l.NpHandle }}">{{ $l.NpHandle }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Description }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.UploadedIn }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.FirstPublished }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.LastUpdated }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.HeartCount }}</a></td>
-                    <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Background }}</a></td>
-                </tr>
-                {{ end }}
-
-            </table>
-            <span>Page {{.Page}}</span>
-            <br>
-
-            {{ if .PrevPage }}
-            <a href="/search?s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
-            {{else}}
-            <span style="color: gray">Previous Page</span>
+        <h2 class="header">Found Levels In {{ .Elapsed}}</h2>
+        <table>
+            <tr>
+                <th>Icon</th>
+                <th>Level ID</th>
+                <th>Level Name</th>
+                <th>Level Uploader</th>
+                <th>Level Description</th>
+                <th>Uploaded In</th>
+                <th>First Published</th>
+                <th>Last Updated</th>
+                <th>Heart Count (approximate)</th>
+                <th>Background ID</th>
+            </tr>
+            {{ range $l := .Results }}
+            <tr>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">
+                    <img class="table-icon" src="/icon/{{ $l.GetIcon }}" alt="the level icon" aria-hidden="true" onerror="this.style.display='none'" loading="lazy"/>
+                </a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.ID }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Name }}</a></td>
+                <td><a class="table-link" href="/user/{{ $l.NpHandle }}">{{ $l.NpHandle }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Description }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.GetPublishedIn }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.GetPublished }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.GetUpdated }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.HeartCount }}</a></td>
+                <td><a class="table-link" href="/slot/{{ $l.ID }}">{{ $l.Background }}</a></td>
+            </tr>
             {{ end }}
 
-            {{ if .NextPage }}
-            <a href="/search?s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
-            {{ else }}
-            <span style="color: gray">Next Page</span>
-            {{ end }}
-        {{ else }}
-           <h2>No levels found, unfortunately</h2>
+        </table>
+        <span>Page {{.Page}}</span>
+        <br>
+
+        {{ if .PrevPage }}
+        <a href="/search?s={{ .SearchQuery }}&page={{ .PrevPage }}">Previous Page</a>
+        {{else}}
+        <span style="color: gray">Previous Page</span>
         {{ end }}
+
+        {{ if .NextPage }}
+        <a href="/search?s={{ .SearchQuery }}&page={{ .NextPage }}">Next Page</a>
+        {{ else }}
+        <span style="color: gray">Next Page</span>
+        {{ end }}
+
+        {{ if not .Results }}
+            <h2>No levels found, unfortunately</h2>
+        {{ end }}
+    {{ end }}
 
 <footer>
     <div class="shameless-plug">
