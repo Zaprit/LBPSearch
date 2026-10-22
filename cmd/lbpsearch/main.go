@@ -62,7 +62,6 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Use(middleware.RealIP)
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Compress(5))
 
@@ -94,14 +93,17 @@ func main() {
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		website_old.NotFoundTemplate.Execute(w, map[string]interface{}{
+		err := website_old.NotFoundTemplate.Execute(w, map[string]interface{}{
 			"HeaderInjection": template.HTML(cfg.HeaderInjection),
 			"Level":           false,
 		})
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	slog.Info("Started server", "port", 8182)
-	err = http.ListenAndServe(":8182", r)
+	err = http.ListenAndServe(":8182", r) //todo: make listen port configurable
 	if err != nil {
 		panic(err)
 	}

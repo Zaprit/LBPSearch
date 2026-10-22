@@ -1,15 +1,31 @@
 services:
+  db:
+    image: postgres:latest
+    shm_size: 128mb
+    networks:
+      - lbpsearch
+    environment:
+      POSTGRES_PASSWORD: lbpsearch
+      POSTGRES_USER: lbpsearch
+      POSTGRES_DB: lbpsearch
   lbpsearch:
     image: lbpsearch:latest
     build: .
-    network_mode: host
+    depends_on:
+      - db
+    networks:
+      - lbpsearch
+    ports:
+      - "8182:8182"
     volumes:
       - ./data:/data
     environment:
-      LBPSEARCH_GLOBAL_URL: https://zaprit.fish
+      LBPSEARCH_GLOBAL_URL: http://localhost:8182
       LBPSEARCH_DATABASE_NAME: lbpsearch
       LBPSEARCH_DATABASE_USER: lbpsearch
       LBPSEARCH_DATABASE_PASSWORD: lbpsearch
-      LBPSEARCH_DATABASE_HOST: localhost
-      LBPSEARCH_SHOW_SPONSOR_MESSAGE: true
+      LBPSEARCH_DATABASE_HOST: db
+      LBPSEARCH_SHOW_SPONSOR_MESSAGE: false
 
+networks:
+  lbpsearch: {}
