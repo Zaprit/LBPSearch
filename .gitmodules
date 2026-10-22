@@ -1,0 +1,4 @@
+[submodule "deps/archive_dl"]
+	path = deps/archive_dl
+	url = https://github.com/Zaprit/lbp_archive_dl
+	branch = lbpsearch-parse
