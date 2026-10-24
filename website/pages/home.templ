@@ -3,24 +3,25 @@ package pages
 import "github.com/Zaprit/LBPSearch/website/components"
 
 templ HomePage(headerInjection string) {
-    <!DOCTYPE html>
-    <html lang="en">
-	@components.Header("Home", headerInjection)
-	<body>
-	    @components.TitleBar(false)
-	    <main>
-	        <div class="@container">
-                <h1 class="text-center text-4xl">LBPSearch</h1>
-
-                @components.SearchBox("")
-
-                <hr>
-
-                <p class="text-w">
-                This website lets you search the unofficial archive of the LittleBigPlanet servers, and download levels from it.
-                </p>
-            </div>
-	    </main>
-	</body>
+	<!DOCTYPE html>
+	<html lang="en">
+		@components.Header("Home", headerInjection)
+		<body>
+			@components.TitleBar(false)
+			<main>
+				<div class="container column">
+					<div class="container centered">
+						<h1 class="text-center text-4xl">LBPSearch</h1>
+						@components.SearchBox("")
+					</div>
+				</div>
+			</main>
+			<footer>
+				<hr/>
+				<p class="text-w">
+					This website lets you search the unofficial archive of the LittleBigPlanet servers, and download levels from it.
+				</p>
+			</footer>
+		</body>
 	</html>
 }

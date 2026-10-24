@@ -2,51 +2,54 @@ package components
 
 // SearchBox search form.
 // - query: current search string to prefill the input
-// - inline: if true, renders compact inline layout; otherwise a centered prominent layout
 templ SearchBox(query string) {
-    <form method="GET" action="/search" role="search">
-        <label>
-        <input type="search" name="s" class="search-box" placeholder="Search for a level or a user..." value={query}>
-        </label>
-        <input type="submit" class="search-button" value="Search">
-
-        <details class="filters">
-            <summary>Filters</summary>
-            <br>
-            <label for="sort">Sort:</label>
-            <select name="sort" id="sort">
-                <option value="hearts">Hearts</option>
-                <option value="plays">Plays</option>
-                <option value="name">Alphabetically</option>
-            </select>
-            <br>
-            <span>Games:</span>
-            <br>
-            <label>
-            LittleBigPlanet 1
-            <input type="checkbox" name="game" value="lbp1" checked>
-            </label>
-            <br>
-            <label>
-            LittleBigPlanet 2
-            <input type="checkbox" name="game" value="lbp2" checked>
-            </label>
-            <br>
-            <label>
-            LittleBigPlanet 3
-            <input type="checkbox" name="game" value="lbp3" checked>
-            </label>
-        </details>
-    </form>
+	<form method="GET" action="/search" role="search">
+		<div class="container column">
+            <div class="container row">
+			<label>
+				<input type="search" name="s" class="search-box" placeholder="Search levels/users" value={ query }/>
+			</label>
+			<label for="cb" class="filter-button"><i class="fa-solid fa-sliders"></i></label>
+            </div>
+            <input type="submit" class="search-button" value="Search!"/>
+            <input type="checkbox" style="display: none" id="cb"/>
+				<div id="filters" class="filters">
+					<label for="sort">Sort:</label>
+					<select name="sort" id="sort">
+						<option value="hearts">Hearts</option>
+						<option value="plays">Plays</option>
+						<option value="name">Alphabetically</option>
+					</select>
+					<br/>
+					<span>Games:</span>
+					<br/>
+					<label>
+						LittleBigPlanet 1
+						<input type="checkbox" name="game" value="lbp1" checked/>
+					</label>
+					<br/>
+					<label>
+						LittleBigPlanet 2
+						<input type="checkbox" name="game" value="lbp2" checked/>
+					</label>
+					<br/>
+					<label>
+						LittleBigPlanet 3
+						<input type="checkbox" name="game" value="lbp3" checked/>
+					</label>
+				</div>
+				
+		</div>
+	</form>
 }
 
 // A compact version used in tight spaces like headers
 templ SearchBoxSmall(query string) {
-    <form method="GET" action="/search" role="search">
-        <div class="flex">
-            <input type="search" name="s" class="small-search-box" placeholder="Search..." value={query}>
-            <input type="hidden" name="inline" value="true">
-            <button class="small-search-box-submit" type="submit">Go</button>
-        </div>
-    </form>
+	<form method="GET" action="/search" role="search">
+		<div class="flex">
+			<input type="search" name="s" class="small-search-box" placeholder="Search..." value={ query }/>
+			<input type="hidden" name="inline" value="true"/>
+			<button class="small-search-box-submit" type="submit">Go</button>
+		</div>
+	</form>
 }

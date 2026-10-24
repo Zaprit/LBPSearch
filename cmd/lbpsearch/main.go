@@ -50,13 +50,13 @@ func main() {
 	//}
 
 	slog.Info("Creating indexes")
-	//conn.Raw("ALTER TABLE slots ADD COLUMN IF NOT EXISTS textsearchable_lang text NOT NULL DEFAULT 'english';")
-	//conn.Raw("ALTER TABLE slots ADD COLUMN IF NOT EXISTS textsearchable_index_col tsvector GENERATED ALWAYS AS (to_tsvector(slots.textsearchable_lang, coalesce(slots.name, '') || ' ' || coalesce(slots.np_handle, '') || ' ' || coalesce(slots.description, ''))) STORED;")
-	//conn.Raw("CREATE INDEX slots_textsearch_idx ON slots USING GIN (textsearchable_index_col);")
+	conn.Raw("ALTER TABLE slots ADD COLUMN IF NOT EXISTS textsearchable_lang text NOT NULL DEFAULT 'english';")
+	conn.Raw("ALTER TABLE slots ADD COLUMN IF NOT EXISTS textsearchable_index_col tsvector GENERATED ALWAYS AS (to_tsvector(slots.textsearchable_lang, coalesce(slots.name, '') || ' ' || coalesce(slots.np_handle, '') || ' ' || coalesce(slots.description, ''))) STORED;")
+	conn.Raw("CREATE INDEX slots_textsearch_idx ON slots USING GIN (textsearchable_index_col);")
 	//conn.Raw("CREATE INDEX slot_description_gin_trgm_idx ON slots USING GIN (description gin_trgm_ops);")
 	//conn.Raw("CREATE INDEX slot_name_gin_trgm_idx ON slots USING GIN (name gin_trgm_ops);")
 	//conn.Raw("CREATE INDEX slot_nphandle_gin_trgm_idx ON slots USING GIN (np_handle gin_trgm_ops);")
-	//conn.Raw("CREATE INDEX binley_mega_index ON slots USING GIN (np_handle gin_trgm_ops);")
+	// conn.Raw("CREATE INDEX binley_mega_index ON slots USING GIN (np_handle gin_trgm_ops);")
 	conn.Debug()
 	slog.Info("Connected to the database")
 

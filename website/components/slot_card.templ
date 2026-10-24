@@ -2,48 +2,48 @@ package components
 
 import "github.com/Zaprit/LBPSearch/pkg/model"
 import "strconv"
+import "github.com/Zaprit/LBPSearch/pkg/utils"
 
 templ SlotCard(slot model.Slot) {
-	<div class="card d-flex flex-column flex-md-row my-4 rounded-left">
-		<div class="card-header border-0 rounded-left text-center">
+	<div class="card">
+		<div class="levelicon">
 			<img
 				src={ "/icons/" + slot.GetIcon() }
 				alt="Level Icon"
-				class="rounded-circle level-icon mb-md-0"
-				style="width: 150px; height: 150px; object-fit: cover;"
+				class="level-icon centerslot"
 				onerror="this.onerror=null; this.src='/static/img/placeholder.png'"
 			/>
 		</div>
-		<div class="card-body flex-grow-1">
-			<div class="d-flex align-items-center justify-content-between mb-2">
-				<a class="stretched-link card-link" href={ "/slot/" + strconv.FormatInt(int64(slot.ID), 10) }><h4 class="card-title mb-0">{ slot.Name }</h4></a>
-				<div class="d-flex align-items-center">
-					<div class="d-flex align-items-center" style="min-width: 200px;">
+		<div class="insidecard">
+			<div class="d">
+				<a class="insidecard" href={ "/slot/" + strconv.FormatInt(int64(slot.ID), 10) }><h4 class="insidecard">{ slot.Name }</h4></a>
+				<div class="insidecard">
+					<div class="container row" style="min-width: 200px;">
 						<img
 							src={ "/icons/" + slot.Author.GetIcon() }
 							alt="Author avatar"
-							class="rounded-circle mr-2"
-							style="width: 32px; height: 32px; object-fit: cover;"
+							class="insidecard"
+							style="max-width: 32px; min-width: 32px; height: 32px; object-fit: cover;"
 							onerror="this.onerror=null; this.src='/static/img/placeholder.png'"
 						/>
-						<a href="#" class="text-muted text-truncate" style="max-width: 160px;">{slot.NpHandle}</a>
+						<a href="#" class="text-muted text-truncate" style="max-width: 160px; justify-content: center;">{slot.NpHandle}</a>
 					</div>
 				</div>
 			</div>
 			<p class="card-text">
-				{slot.Description}
+				{utils.TruncateText(slot.Description, 100)}
 			</p>
 		</div>
-		<div class="card-footer border-0 bg-white d-flex flex-row flex-md-column justify-content-around justify-content-md-start px-4 px-md-3">
-			<div class="mb-md-3 d-flex align-items-center">
+		<div class="card-footer container row">
+			<div>
 				<i class="fas fa-heart"></i>
 				<span class="ml-2">{slot.HeartCount}</span>
 			</div>
-			<div class="mb-md-3 d-flex align-items-center">
+			<div>
 				<i class="fas fa-play"></i>
 				<span class="ml-2">{slot.PlayCount}</span>
 			</div>
-			<div class="mb-md-3 d-flex align-items-center">
+			<div>
 				<i class="fas fa-download"></i>
 				<span class="ml-2">45</span>
 			</div>

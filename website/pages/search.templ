@@ -10,13 +10,14 @@ templ SearchPage(results []model.Slot, query, headerInjection string) {
 		<body>
 			@components.TitleBar(false)
 			<main>
-				<div class="container">
+				<div class="container column centered">
 					@components.SearchBox(query)
-				</div>
-				<div class="container">
+				
+				<div class="container results">
 				for _, result := range results {
 					@components.SlotCard(result)
 				}
+				</div>
 				</div>
 			</main>
 		</body>

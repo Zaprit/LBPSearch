@@ -43,7 +43,7 @@ func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 			asc = true
 		}
 
-		results, err := db.GetSlots(conn, query, sort, int(page), 50, asc)
+		results, err := db.GetSlots(conn, query, sort, int(page), 30, asc)
 		if err != nil {
 			panic(err)
 		}

@@ -24,10 +24,10 @@ func SetupRouting(cfg *config.Config, router chi.Router, conn *gorm.DB) {
 
 	router.Get("/slot/{id}", handlers.SlotHandler(conn, cfg.HeaderInjection))
 
-	fs := http.FileServerFS(StaticFiles)
-	router.Handle("/static/*", http.StripPrefix("/",
+	fs := http.FileServer(http.Dir("./website/static"))
+	router.Handle("/static/*", http.StripPrefix("/static",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "max-age=604800, public")
+			// w.Header().Set("Cache-Control", "max-age=604800, public")
 			// Truly, one of the lines of all time
 			w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
 			fs.ServeHTTP(w, r)
