@@ -43,7 +43,7 @@ func Header(title, injection string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><!-- <link rel=\"stylesheet\" href=\"/static/bootstrap/css/bootstrap.min.css\"/>--><link rel=\"stylesheet\" href=\"/static/fontawesome/css/all.min.css\"><link rel=\"stylesheet\" href=\"/static/css/style.css\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><!-- <link rel=\"stylesheet\" href=\"/static/bootstrap/css/bootstrap.min.css\"/>--><link rel=\"stylesheet\" href=\"/static/fontawesome/css/all.min.css\"><link rel=\"stylesheet\" href=\"/static/css/style.css\"><!-- Evil font that I hate --><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans+JP&family=IBM+Plex+Sans+KR&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap\" rel=\"stylesheet\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

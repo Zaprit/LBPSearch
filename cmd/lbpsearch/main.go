@@ -67,14 +67,14 @@ func main() {
 
 	r.Get("/api/resource/{resource}", api.ResourcesEndpoint())
 
-	website.SetupRouting(cfg, r, conn)
+	website.SetupRouting(cfg, r, conn, changelog)
 
 	//r.Get("/", website_old.IndexHandler(cfg))
 	//r.Get("/search", website_old.SearchHandler(conn, cfg))
 	r.Get("/user/{npHandle}", website_old.UserHandler(conn, cfg))
 	//r.Get("/slot/{slotID}", website_old.SlotHandler(conn, cfg))
 	r.Get("/icons/{hash}", api.IconEndpoint(storageBackend, storageBackend))
-	r.Get("/changelog", website_old.ChangelogHandler(cfg))
+	//r.Get("/changelog", website_old.ChangelogHandler(cfg))
 	r.Get("/dl_archive/{id}", website_old.DownloadArchiveHandler(conn, cfg, storageBackend))
 	r.Get("/sitemap_other.xml", website_old.SitemapHandler(cfg))
 	r.Get("/sitemap_other.xml.gz", website_old.SitemapGZHandler(cfg))

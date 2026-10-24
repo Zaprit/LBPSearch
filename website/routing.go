@@ -17,12 +17,14 @@ import (
 //go:embed static
 var StaticFiles embed.FS
 
-func SetupRouting(cfg *config.Config, router chi.Router, conn *gorm.DB) {
+func SetupRouting(cfg *config.Config, router chi.Router, conn *gorm.DB, changelog string) {
 	router.Get("/", templ.Handler(pages.HomePage(cfg.HeaderInjection)).ServeHTTP)
 
 	router.Get("/search", handlers.SearchHandler(conn, cfg.HeaderInjection))
 
 	router.Get("/slot/{id}", handlers.SlotHandler(conn, cfg.HeaderInjection))
+
+	router.Get("/changelog", templ.Handler(pages.ChangelogPage(cfg.HeaderInjection, changelog)).ServeHTTP)
 
 	fs := http.FileServer(http.Dir("./website/static"))
 	router.Handle("/static/*", http.StripPrefix("/static",

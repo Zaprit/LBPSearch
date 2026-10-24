@@ -8,12 +8,13 @@ templ SlotPage(slot model.Slot, headerInjection string) {
 	<html lang="en">
 		@components.Header(slot.GetName(), headerInjection)
 		<body>
-		@components.TitleBar(true)
-		<main>
-            <h1>{slot.GetName()}</h1>
-            <span>{slot.NpHandle}</span>
-            <p>{slot.Description}</p>
-		</main>
+			@components.TitleBar(true)
+			<main>
+				<h1>{ slot.GetName() }</h1>
+				<span>{ slot.NpHandle }</span>
+				<p>{ slot.Description }</p>
+			</main>
+			@components.Footer()
 		</body>
 	</html>
 }

@@ -5,51 +5,131 @@ package components
 templ SearchBox(query string) {
 	<form method="GET" action="/search" role="search">
 		<div class="container column">
-            <div class="container row">
-			<label>
-				<input type="search" name="s" class="search-box" placeholder="Search levels/users" value={ query }/>
-			</label>
-			<label for="cb" class="filter-button"><i class="fa-solid fa-sliders"></i></label>
-            </div>
-            <input type="submit" class="search-button" value="Search!"/>
-            <input type="checkbox" style="display: none" id="cb"/>
-				<div id="filters" class="filters">
-					<label for="sort">Sort:</label>
+			<div class="container row">
+				<label>
+					<input type="search" name="s" class="search-box" placeholder="Search levels/users" value={ query }/>
+				</label>
+				<label for="cb" class="filter-button"><i class="fa-solid fa-sliders"></i></label>
+			</div>
+			<input type="submit" class="search-button" value="Search!"/>
+			<input type="checkbox" style="display: none" id="cb" name="filters-shown"/>
+			<div id="filters" class="filters">
+				<label for="sort">Sort:</label>
+				<div class="container row">
 					<select name="sort" id="sort">
 						<option value="hearts">Hearts</option>
 						<option value="plays">Plays</option>
-						<option value="name">Alphabetically</option>
+						<option value="author">By Author</option>
 					</select>
-					<br/>
-					<span>Games:</span>
-					<br/>
-					<label>
-						LittleBigPlanet 1
-						<input type="checkbox" name="game" value="lbp1" checked/>
-					</label>
-					<br/>
-					<label>
-						LittleBigPlanet 2
-						<input type="checkbox" name="game" value="lbp2" checked/>
-					</label>
-					<br/>
-					<label>
-						LittleBigPlanet 3
-						<input type="checkbox" name="game" value="lbp3" checked/>
-					</label>
+					<label class="sort-invert">Invert Sort</label> <input type="checkbox" name="invert"/>
 				</div>
-				
+				<span>Games:</span>
+				<br/>
+				<label>
+					LittleBigPlanet 1
+					<input type="checkbox" name="game" value="lbp1" checked/>
+				</label>
+				<br/>
+				<label>
+					LittleBigPlanet 2
+					<input type="checkbox" name="game" value="lbp2" checked/>
+				</label>
+				<br/>
+				<label>
+					LittleBigPlanet 3
+					<input type="checkbox" name="game" value="lbp3" checked/>
+				</label>
+				<hr/>
+				<label for="view">List View:</label>
+				<input type="radio" name="view" value="list" id="list">
+				<label for="grid">Grid View:</label>
+				<input type="radio" name="view" value="grid" id="grid" checked>
+			</div>
 		</div>
 	</form>
 }
 
-// A compact version used in tight spaces like headers
-templ SearchBoxSmall(query string) {
+// A compact version used on the search page
+templ SearchBoxInline(query string, filtersShown bool, sort string, invert bool, lbp1 bool, lbp2 bool, lbp3 bool) {
 	<form method="GET" action="/search" role="search">
-		<div class="flex">
-			<input type="search" name="s" class="small-search-box" placeholder="Search..." value={ query }/>
-			<input type="hidden" name="inline" value="true"/>
-			<button class="small-search-box-submit" type="submit">Go</button>
+		<div class="">
+			<div class="container column search-container">
+				<div class="container row">
+					<input type="search" name="s" class="search-box" placeholder="Search..." value={ query }/>
+					<label for="cb" class="filter-button-inline"><i class="fa-solid fa-sliders"></i></label>
+					<input type="submit" class="search-button-inline" value="Search!"/>
+				</div>
+				if filtersShown {
+					<input type="checkbox" style="display: none" id="cb" name="filters-shown" checked/>
+				} else {
+					<input type="checkbox" style="display: none" id="cb" name="filters-shown"/>
+				}
+				<div id="filters" class="filters">
+					<label for="sort">Sort:</label>
+					<div class="container row">
+						<select name="sort" id="sort">
+							switch sort {
+								case "hearts":
+									<option value="hearts" selected>Hearts</option>
+									<option value="plays">Plays</option>
+									<option value="author">By Author</option>
+								case "plays":
+									<option value="hearts">Hearts</option>
+									<option value="plays" selected>Plays</option>
+									<option value="author">By Author</option>
+								case "author":
+									<option value="hearts">Hearts</option>
+									<option value="plays">Plays</option>
+									<option value="author" selected>By Author</option>
+								default:
+									<option value="hearts" selected>Hearts</option>
+									<option value="plays">Plays</option>
+									<option value="author">By Author</option>
+							}
+						</select>
+						<label class="sort-invert">Invert Sort</label>
+						if invert {
+							<input type="checkbox" name="invert" checked/>
+						} else {
+							<input type="checkbox" name="invert"/>
+						}
+					</div>
+					<span>Games:</span>
+					<br/>
+					<label>
+						LittleBigPlanet 1
+						if lbp1 {
+							<input type="checkbox" name="game" value="lbp1" checked/>
+						} else {
+							<input type="checkbox" name="game" value="lbp1"/>
+						}
+					</label>
+					<br/>
+					<label>
+						LittleBigPlanet 2
+						if lbp2 {
+							<input type="checkbox" name="game" value="lbp2" checked/>
+						} else {
+							<input type="checkbox" name="game" value="lbp2"/>
+						}
+					</label>
+					<br/>
+					<label>
+						LittleBigPlanet 3
+						if lbp3 {
+							<input type="checkbox" name="game" value="lbp3" checked/>
+						} else {
+							<input type="checkbox" name="game" value="lbp3"/>
+						}
+					</label>
+					<hr/>
+					<label for="view">List View:</label>
+					<input type="radio" name="view" value="list" id="list">
+					<label for="grid">Grid View:</label>
+					<input type="radio" name="view" value="grid" id="grid" checked>
+					<br/>
+				</div>
+			</div>
 		</div>
 	</form>
 }

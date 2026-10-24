@@ -1,0 +1,19 @@
+package pages
+
+import "github.com/Zaprit/LBPSearch/website/components"
+
+templ ChangelogPage(headerInjection, changelog string) {
+    <!DOCTYPE html>
+	<html lang="en">
+		@components.Header("Home", headerInjection)
+		<body>
+			@components.TitleBar(false)
+			<main>
+				<p class="changelog">
+                    @templ.Raw(changelog)
+                </p>
+			</main>
+			@components.Footer()
+		</body>
+	</html>
+}

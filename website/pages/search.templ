@@ -2,8 +2,10 @@ package pages
 
 import "github.com/Zaprit/LBPSearch/website/components"
 import "github.com/Zaprit/LBPSearch/pkg/model"
+import "net/url"
+import "fmt"
 
-templ SearchPage(results []model.Slot, query, headerInjection string) {
+templ SearchPage(results []model.Slot, query, headerInjection string, filtersShown bool, sort string, invert bool, lbp1 bool, lbp2 bool, lbp3 bool, page uint64, maxPage uint64, prevURL *url.URL, nextURL *url.URL) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@components.Header("Results for "+query, headerInjection)
@@ -11,15 +13,52 @@ templ SearchPage(results []model.Slot, query, headerInjection string) {
 			@components.TitleBar(false)
 			<main>
 				<div class="container column centered">
-					@components.SearchBox(query)
-				
-				<div class="container results">
-				for _, result := range results {
-					@components.SlotCard(result)
-				}
-				</div>
+					@components.SearchBoxInline(query, filtersShown, sort, invert, lbp1, lbp2, lbp3)
+					<div class="container results">
+						for _, result := range results {
+							@components.SlotCard(result)
+						}
+					</div>
+					<div class="page-navigation">
+						{{
+							earliestPage := page
+							lastPage := maxPage
+							if earliestPage > 10 {
+								earliestPage = page - 4
+								lastPage = page + 4
+							} else {
+								earliestPage = 1
+							}
+							if lastPage > page+3 {
+								lastPage = page + 3
+							}
+							
+						}}
+						for i := earliestPage; i <= lastPage; i++ {
+							if i == page {
+								<span class="page-marker current">{ i }</span>
+							} else {
+								{{
+									pageURL := prevURL.Clone()
+									pageQuery := pageURL.Query().Clone()
+									pageQuery.Set("page", fmt.Sprint(i))
+									pageURL.RawQuery = pageQuery.Encode()
+								}}
+								<a class="page-marker" href={ pageURL.String() }>{ i }</a>
+							}
+						}
+					</div>
+					<div class="page-navigation">
+						if page > 1 {
+							<a class="page-marker" href={ prevURL.String() }>Previous Page</a>
+						}
+						if len(results) == 30 {
+							<a class="page-marker" href={ nextURL.String() }>Next Page</a>
+						}
+					</div>
 				</div>
 			</main>
+			@components.Footer()
 		</body>
 	</html>
 }

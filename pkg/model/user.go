@@ -37,6 +37,9 @@ type User struct {
 }
 
 func (u *User) GetIcon() string {
+	if u.Icon == nil {
+		return ""
+	}
 	return hex.EncodeToString(u.Icon)
 }
 

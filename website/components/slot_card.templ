@@ -7,45 +7,43 @@ import "github.com/Zaprit/LBPSearch/pkg/utils"
 templ SlotCard(slot model.Slot) {
 	<div class="card">
 		<div class="levelicon">
-			<img
-				src={ "/icons/" + slot.GetIcon() }
-				alt="Level Icon"
-				class="level-icon centerslot"
-				onerror="this.onerror=null; this.src='/static/img/placeholder.png'"
-			/>
+			<a href={ "/slot/" + strconv.FormatInt(int64(slot.ID), 10) }>
+				<img
+					src={ "/icons/" + slot.GetIcon() }
+					alt="Level Icon"
+					class="level-icon centerslot"
+					onerror="this.onerror=null; this.src='/static/img/placeholder.png'"
+				/>
+			</a>
 		</div>
 		<div class="insidecard">
-			<div class="d">
-				<a class="insidecard" href={ "/slot/" + strconv.FormatInt(int64(slot.ID), 10) }><h4 class="insidecard">{ slot.Name }</h4></a>
-				<div class="insidecard">
-					<div class="container row" style="min-width: 200px;">
-						<img
-							src={ "/icons/" + slot.Author.GetIcon() }
-							alt="Author avatar"
-							class="insidecard"
-							style="max-width: 32px; min-width: 32px; height: 32px; object-fit: cover;"
-							onerror="this.onerror=null; this.src='/static/img/placeholder.png'"
-						/>
-						<a href="#" class="text-muted text-truncate" style="max-width: 160px; justify-content: center;">{slot.NpHandle}</a>
-					</div>
-				</div>
+			<a class="card-title" href={ "/slot/" + strconv.FormatInt(int64(slot.ID), 10) }>{ slot.Name }</a>
+			<div class="container row" style="min-width: 200px;">
+				<img
+					src={ "/icons/" + slot.Author.GetIcon() }
+					alt="Author avatar"
+					class="author-avatar"
+					style="max-width: 32px; min-width: 32px; height: 32px; object-fit: cover;"
+					onerror="this.onerror=null; this.src='/static/img/placeholder-avatar.png'"
+				/>
+				<a href="#" class="author-name">{ slot.NpHandle }</a>
 			</div>
 			<p class="card-text">
-				{utils.TruncateText(slot.Description, 100)}
+				{ utils.TruncateText(slot.Description, 100) }
 			</p>
 		</div>
 		<div class="card-footer container row">
-			<div>
-				<i class="fas fa-heart"></i>
-				<span class="ml-2">{slot.HeartCount}</span>
+			<div class="container column">
+				<i class="text-centered fas fa-heart"></i>
+				<span class="card-statistic">{ slot.HeartCount }</span>
 			</div>
-			<div>
-				<i class="fas fa-play"></i>
-				<span class="ml-2">{slot.PlayCount}</span>
+			<div class="container column">
+				<i class="text-centered fas fa-download"></i>
+				<span class="card-statistic">45</span>
 			</div>
-			<div>
-				<i class="fas fa-download"></i>
-				<span class="ml-2">45</span>
+			<div class="container column">
+				<i class="text-centered fas fa-play"></i>
+				<span class="card-statistic">{ slot.PlayCount }</span>
 			</div>
 		</div>
 	</div>

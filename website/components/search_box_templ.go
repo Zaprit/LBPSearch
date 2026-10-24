@@ -38,13 +38,13 @@ func SearchBox(query string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.ResolveAttributeValue(query)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website/components/search_box.templ`, Line: 10, Col: 100}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website/components/search_box.templ`, Line: 10, Col: 101}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"></label> <label for=\"cb\" class=\"filter-button\"><i class=\"fa-solid fa-sliders\"></i></label></div><input type=\"submit\" class=\"search-button\" value=\"Search!\"> <input type=\"checkbox\" style=\"display: none\" id=\"cb\"><div id=\"filters\" class=\"filters\"><label for=\"sort\">Sort:</label> <select name=\"sort\" id=\"sort\"><option value=\"hearts\">Hearts</option> <option value=\"plays\">Plays</option> <option value=\"name\">Alphabetically</option></select><br><span>Games:</span><br><label>LittleBigPlanet 1 <input type=\"checkbox\" name=\"game\" value=\"lbp1\" checked></label><br><label>LittleBigPlanet 2 <input type=\"checkbox\" name=\"game\" value=\"lbp2\" checked></label><br><label>LittleBigPlanet 3 <input type=\"checkbox\" name=\"game\" value=\"lbp3\" checked></label></div></div></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"></label> <label for=\"cb\" class=\"filter-button\"><i class=\"fa-solid fa-sliders\"></i></label></div><input type=\"submit\" class=\"search-button\" value=\"Search!\"> <input type=\"checkbox\" style=\"display: none\" id=\"cb\" name=\"filters-shown\"><div id=\"filters\" class=\"filters\"><label for=\"sort\">Sort:</label><div class=\"container row\"><select name=\"sort\" id=\"sort\"><option value=\"hearts\">Hearts</option> <option value=\"plays\">Plays</option> <option value=\"author\">By Author</option></select> <label class=\"sort-invert\">Invert Sort</label> <input type=\"checkbox\" name=\"invert\"></div><span>Games:</span><br><label>LittleBigPlanet 1 <input type=\"checkbox\" name=\"game\" value=\"lbp1\" checked></label><br><label>LittleBigPlanet 2 <input type=\"checkbox\" name=\"game\" value=\"lbp2\" checked></label><br><label>LittleBigPlanet 3 <input type=\"checkbox\" name=\"game\" value=\"lbp3\" checked></label><hr><label for=\"view\">List View:</label> <input type=\"radio\" name=\"view\" value=\"list\" id=\"list\"> <label for=\"grid\">Grid View:</label> <input type=\"radio\" name=\"view\" value=\"grid\" id=\"grid\" checked></div></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -52,8 +52,8 @@ func SearchBox(query string) templ.Component {
 	})
 }
 
-// A compact version used in tight spaces like headers
-func SearchBoxSmall(query string) templ.Component {
+// A compact version used on the search page
+func SearchBoxInline(query string, filtersShown bool, sort string, invert bool, lbp1 bool, lbp2 bool, lbp3 bool) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -74,20 +74,121 @@ func SearchBoxSmall(query string) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<form method=\"GET\" action=\"/search\" role=\"search\"><div class=\"flex\"><input type=\"search\" name=\"s\" class=\"small-search-box\" placeholder=\"Search...\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<form method=\"GET\" action=\"/search\" role=\"search\"><div class=\"\"><div class=\"container column search-container\"><div class=\"container row\"><input type=\"search\" name=\"s\" class=\"search-box\" placeholder=\"Search...\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(query)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website/components/search_box.templ`, Line: 50, Col: 95}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website/components/search_box.templ`, Line: 58, Col: 91}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"> <input type=\"hidden\" name=\"inline\" value=\"true\"> <button class=\"small-search-box-submit\" type=\"submit\">Go</button></div></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"> <label for=\"cb\" class=\"filter-button-inline\"><i class=\"fa-solid fa-sliders\"></i></label> <input type=\"submit\" class=\"search-button-inline\" value=\"Search!\"></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if filtersShown {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<input type=\"checkbox\" style=\"display: none\" id=\"cb\" name=\"filters-shown\" checked>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<input type=\"checkbox\" style=\"display: none\" id=\"cb\" name=\"filters-shown\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"filters\" class=\"filters\"><label for=\"sort\">Sort:</label><div class=\"container row\"><select name=\"sort\" id=\"sort\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		switch sort {
+		case "hearts":
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<option value=\"hearts\" selected>Hearts</option> <option value=\"plays\">Plays</option> <option value=\"author\">By Author</option>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		case "plays":
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<option value=\"hearts\">Hearts</option> <option value=\"plays\" selected>Plays</option> <option value=\"author\">By Author</option>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		case "author":
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<option value=\"hearts\">Hearts</option> <option value=\"plays\">Plays</option> <option value=\"author\" selected>By Author</option>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		default:
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<option value=\"hearts\" selected>Hearts</option> <option value=\"plays\">Plays</option> <option value=\"author\">By Author</option>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</select> <label class=\"sort-invert\">Invert Sort</label> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if invert {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<input type=\"checkbox\" name=\"invert\" checked>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<input type=\"checkbox\" name=\"invert\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><span>Games:</span><br><label>LittleBigPlanet 1 ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if lbp1 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<input type=\"checkbox\" name=\"game\" value=\"lbp1\" checked>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<input type=\"checkbox\" name=\"game\" value=\"lbp1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</label><br><label>LittleBigPlanet 2 ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if lbp2 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<input type=\"checkbox\" name=\"game\" value=\"lbp2\" checked>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<input type=\"checkbox\" name=\"game\" value=\"lbp2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</label><br><label>LittleBigPlanet 3 ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if lbp3 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<input type=\"checkbox\" name=\"game\" value=\"lbp3\" checked>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<input type=\"checkbox\" name=\"game\" value=\"lbp3\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</label><hr><label for=\"view\">List View:</label> <input type=\"radio\" name=\"view\" value=\"list\" id=\"list\"> <label for=\"grid\">Grid View:</label> <input type=\"radio\" name=\"view\" value=\"grid\" id=\"grid\" checked><br></div></div></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

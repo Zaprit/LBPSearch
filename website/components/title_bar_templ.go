@@ -29,7 +29,7 @@ func TitleBar(showSearch bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"lbpsearch-header\"><nav class=\"lbpsearch-navbar\"><ul><li><a class=\"navbar-item-primary\" href=\"/\">LBPSearch</a></li><li><a class=\"navbar-item-secondary\" href=\"#\">Top Levels</a></li><li><a class=\"navbar-item-secondary\" href=\"#\">Changelog</a></li></ul></nav></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"lbpsearch-header\"><nav class=\"lbpsearch-navbar\"><ul><li><a class=\"navbar-item-primary\" href=\"/\">LBPSearch</a></li><li><a class=\"navbar-item-secondary\" href=\"#\">Top Levels</a></li><li><a class=\"navbar-item-secondary\" href=\"/changelog\">Changelog</a></li></ul></nav></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

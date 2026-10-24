@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Zaprit/LBPSearch/pkg/model"
@@ -9,7 +10,7 @@ import (
 
 func AuthorSort(asc bool) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		if asc {
+		if !asc {
 			return db.Order("np_handle ASC")
 		} else {
 			return db.Order("np_handle DESC")
@@ -62,4 +63,17 @@ func GetSlots(db *gorm.DB, query, sort string, page, pageSize int, asc bool) ([]
 	}
 
 	return slots, tx.Error
+}
+
+func GetAdventureLevels(db *gorm.DB) ([]model.Slot, error) {
+	slots, err := gorm.G[model.Slot](db).Order("heart_count desc").Where("is_adventure_planet = true").Limit(30).Find(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for i, s := range slots {
+		var author model.User
+		db.First(&author, "np_handle = ?", s.NpHandle)
+		slots[i].Author = &author
+	}
+	return slots, nil
 }

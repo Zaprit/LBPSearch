@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,7 +14,8 @@ import (
 
 func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var page uint64 = 0
+		var page uint64 = 1
+
 		if pString := r.URL.Query().Get("page"); pString != "" {
 			p, err := strconv.ParseUint(pString, 10, 64)
 			if err != nil {
@@ -21,6 +23,17 @@ func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 				_, _ = w.Write([]byte("Bad Page Number"))
 			}
 			page = p
+		}
+		var maxPage uint64 = page
+		if pString := r.URL.Query().Get("maxpage"); pString != "" {
+			p, err := strconv.ParseUint(pString, 10, 64)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte("Bad Max Page Number"))
+			}
+			if p >= page {
+				maxPage = p
+			}
 		}
 
 		query, err := url.QueryUnescape(r.URL.Query().Get("s"))
@@ -34,8 +47,22 @@ func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 			panic("TODO: Create Error Page")
 			return
 		}
-		sort := "hearts"
-		//sort = r.URL.Query().Get("sort")
+		sort := r.URL.Query().Get("sort")
+
+		games := r.URL.Query()["game"]
+		lbp1 := false
+		lbp2 := false
+		lbp3 := false
+		for _, game := range games {
+			switch game {
+			case "lbp1":
+				lbp1 = true
+			case "lbp2":
+				lbp2 = true
+			case "lbp3":
+				lbp3 = true
+			}
+		}
 
 		asc := false
 
@@ -48,7 +75,21 @@ func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 			panic(err)
 		}
 
-		templ.Handler(pages.SearchPage(results, query, headerInjection)).ServeHTTP(w, r)
+		urlQuery := r.URL.Query()
+		urlQuery.Set("maxpage", fmt.Sprintf("%d", maxPage))
+		r.URL.RawQuery = urlQuery.Encode()
+
+		prevPageURL := r.URL.Clone()
+		urlQuery = prevPageURL.Query()
+		urlQuery.Set("page", fmt.Sprintf("%d", page-1))
+		prevPageURL.RawQuery = urlQuery.Encode()
+
+		nextPageURL := r.URL.Clone()
+		urlQuery2 := nextPageURL.Query()
+		urlQuery2.Set("page", fmt.Sprintf("%d", page+1))
+		nextPageURL.RawQuery = urlQuery2.Encode()
+
+		templ.Handler(pages.SearchPage(results, query, headerInjection, r.URL.Query().Has("filters-shown"), sort, asc, lbp1, lbp2, lbp3, page, maxPage, prevPageURL, nextPageURL)).ServeHTTP(w, r)
 	}
 
 }

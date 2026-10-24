@@ -1,26 +1,34 @@
 :root {
-    --main-background: #d0ced7;
-    --secondary-background: #c5c2c8;
-    --navbar-hover-colour: #85d678;
-    --highlight-color: #8f78d6;
+    --main-background: #eaf3ff;
+    --main-background-end: #c5d4e8;
+    --secondary-background: #d2e4fb;
+    --navbar-hover-colour: #9ec7ff;
+    --highlight-color: #567db3;
     --text-color: #00000;
+    --highlight-text-color: #ffffff;
+    --search-box-color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --main-background: #100d1c;
+        --main-background-end: #080028;
         --secondary-background: #221b3a;
         --dark-highlight-color: #2e196a;
+        --navbar-hover-colour: #542bb6;    
         --highlight-color: #542bb6;
-        --text-color: #bdcbcd;
-        --subtle-text-color: #717b7c;
+        --text-color: #e4ecec;
+        --subtle-text-color: #b9c6c7;
+        --search-box-color: #1a1a1a;
     }
 }
 
 body {
-    background-color: var(--main-background);
+    background-image: linear-gradient(to bottom, var(--main-background) 85%, var(--main-background-end));
     color: var(--text-color);
-    font-family: "Courier New", serif;
+    font-family:  "IBM Plex Sans","IBM Plex Sans KR","IBM Plex Sans JP", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     margin: 0;
     /* Snarky comment about CSS commenting and Google Chrome margins */
     display: flex;
@@ -30,6 +38,12 @@ body {
 
 main {
     flex: 1;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--highlight-color), rgba(0, 0, 0, 0));
 }
 
 .results {
@@ -61,15 +75,31 @@ main {
     background-position: center;
     border-radius: 100%;
     object-fit: scale-down;
-    align-self: center;  
+    align-self: center;
+    margin-left: 40px;
+    margin-right: 40px;
 }
 
 .card-footer {
     align-self: end;
     width: 100%;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: space-around;
 }
+
+.card-title {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1.1em;
+    min-height: 3.5em;
+    margin-top: 10px;
+}
+
+.card-statistic {
+    text-align: center;
+    font-family: monospace;
+}
+
 .insidecard {
     display: flex;
     flex-direction: column;
@@ -82,8 +112,16 @@ main {
     justify-content: center;
 }
 
+.sort-invert {
+    margin-left: 5px;
+}
+
 .container {
     display: flex;
+}
+
+.text-centered {
+    text-align: center;
 }
 
 .centered {
@@ -98,6 +136,23 @@ main {
 
 .row {
     flex-direction: row;
+}
+
+.author-avatar {
+    border-radius: 10%;
+    border: thin solid var(--highlight-color);
+}
+
+.author-name {
+    vertical-align: middle;
+    color: var(--text-color);
+    align-self: center;
+    margin-left: 10px;
+    font-size: 1.2em;
+}
+
+.author-name:visited {
+    color: var(--text-color);
 }
 
 footer {
@@ -144,7 +199,7 @@ li {
 
 .navbar-item-primary:hover {
     background-color: var(--navbar-hover-colour);
-    color: var(--highlight-color);
+    color: var(--highlight-text-color);
 }
 
 .navbar-item-secondary {
@@ -159,11 +214,11 @@ li {
 
 .navbar-item-secondary:hover {
     background-color: var(--navbar-hover-colour);
-    color: var(--highlight-color);
+    color: var(--highlight-text-color);
 }
 
 .search-box {
-    background-color: var(--secondary-background);
+    background-color: var(--search-box-color);
     color: var(--subtle-text-color);
     border-radius: 10px;
     border: thin solid var(--highlight-color);
@@ -171,7 +226,6 @@ li {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     width: 50dvw;
-    min-width: 300px;
 
     margin-right: 0;
     padding-right: 0;
@@ -191,8 +245,13 @@ li {
     font-size: 2em;
     margin-top: 10px;
     padding: 5px;
+    
     align-self: center;
     margin-bottom: 10px;
+}
+
+.search-container {
+    padding-top: 20px;
 }
 
 .filter-button {
@@ -205,12 +264,39 @@ li {
     border-radius: 10px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    
+
 }
 
 .filter-button:hover {
     background-color: var(--dark-highlight-color);
+}
+
+.search-button-inline {
+    background-color: var(--secondary-background);
+    color: var(--subtle-text-color);
+    border: thin solid var(--highlight-color);
+    border-left-style: solid;
+    border-radius: 10px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    align-self: center;
+    padding: 5px;
+    height: 3.6em;
+}
+
+.filter-button-inline {
+    background-color: var(--secondary-background);
     align-content: center;
+    width: 40px;
+    text-align: center;
+    border: thin solid var(--highlight-color);
+    border-left-style: solid;
+    border-right-style: solid;
+}
+
+.filter-button-inline:hover {
+    background-color: var(--dark-highlight-color);
+
 }
 
 .flexcenter {
@@ -227,12 +313,34 @@ li {
     background-color: var(--secondary-background);
     border: thin solid var(--highlight-color);
     border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 10px;
+}
+
+.filters-inline {
+    width: 200px;
+    max-height: 0;
+    transition: visibility 0.2s, max-height 0.2s linear;
+    visibility: hidden;
+    overflow: hidden;
+    background-color: var(--secondary-background);
+    border: thin solid var(--highlight-color);
+    border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     padding: 10px;
 }
 
 input:checked~.filters {
     /* position: absolute; */
-    max-height: 150px;
+    max-height: 180px;
+    visibility: visible;
+}
+
+input:checked~.filters-inline {
+    /* position: absolute; */
+    max-height: 180px;
     visibility: visible;
 }
 
@@ -248,6 +356,7 @@ select {
 }
 
 .level-icon {
+    min-height: 200px;
     min-width: 200px;
     max-width: 200px;
     background-size: cover;
@@ -260,4 +369,17 @@ select {
     text-align: left;
     overflow-wrap: anywhere;
     
+}
+
+.page-navigation {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-marker {
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
 }

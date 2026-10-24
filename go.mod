@@ -1,6 +1,6 @@
 module github.com/Zaprit/LBPSearch
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/HugeSpaceship/HugeSpaceship v0.0.0-20260714213113-d453c37a9c2a
