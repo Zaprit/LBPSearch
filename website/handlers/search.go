@@ -44,7 +44,7 @@ func SearchHandler(conn *gorm.DB, headerInjection string) http.HandlerFunc {
 
 		if query == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			panic("TODO: Create Error Page")
+			templ.Handler(pages.HomePage(headerInjection, "Query must not be empty")).ServeHTTP(w, r)
 			return
 		}
 		sort := r.URL.Query().Get("sort")

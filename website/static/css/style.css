@@ -191,10 +191,7 @@ li {
     background-color: var(--secondary-background);
     color: var(--text-color);
     text-decoration: none;
-    padding-right: 7.5px;
-    padding-left: 7.5px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px 8px;
 }
 
 .navbar-item-primary:hover {
@@ -206,10 +203,7 @@ li {
     background-color: var(--secondary-background);
     color: var(--text-color);
     text-decoration: none;
-    padding-right: 7.5px;
-    padding-left: 7.5px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px 8px;
 }
 
 .navbar-item-secondary:hover {
@@ -220,11 +214,9 @@ li {
 .search-box {
     background-color: var(--search-box-color);
     color: var(--subtle-text-color);
-    border-radius: 10px;
     border: thin solid var(--highlight-color);
     border-right-style: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 10px 0 0 10px;
     width: 50dvw;
 
     margin-right: 0;
@@ -260,11 +252,8 @@ li {
     width: 40px;
     text-align: center;
     border: thin solid var(--highlight-color);
-    border-left-style: solid;
-    border-radius: 10px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-
+    border-left-style: none;
+    border-radius: 0 10px 10px 0;
 }
 
 .filter-button:hover {
@@ -275,10 +264,8 @@ li {
     background-color: var(--secondary-background);
     color: var(--subtle-text-color);
     border: thin solid var(--highlight-color);
-    border-left-style: solid;
-    border-radius: 10px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-left-style: none;
+    border-radius: 0 10px 10px 0;
     align-self: center;
     padding: 5px;
     height: 3.6em;
@@ -290,8 +277,8 @@ li {
     width: 40px;
     text-align: center;
     border: thin solid var(--highlight-color);
-    border-left-style: solid;
-    border-right-style: solid;
+    border-left-style: none;
+    border-right-style: none;
 }
 
 .filter-button-inline:hover {
@@ -382,4 +369,8 @@ select {
     text-align: center;
     margin-left: 5px;
     margin-right: 5px;
+}
+
+.error-text {
+    color: red;
 }

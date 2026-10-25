@@ -2,7 +2,7 @@ package pages
 
 import "github.com/Zaprit/LBPSearch/website/components"
 
-templ HomePage(headerInjection string) {
+templ HomePage(headerInjection, errorText string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@components.Header("Home", headerInjection)
@@ -13,6 +13,11 @@ templ HomePage(headerInjection string) {
 					<div class="container centered">
 						<h1 class="text-center text-4xl">LBPSearch</h1>
 						@components.SearchBox("")
+						if errorText != "" {
+						    <p class="error-text">
+						    { errorText }
+						    </p>
+						}
 					</div>
 				</div>
 			</main>

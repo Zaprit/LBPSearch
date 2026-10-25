@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"log/slog"
@@ -53,37 +54,52 @@ func main() {
 	}
 	if !*NoSlots {
 		slog.Info("Truncating slots")
-		dest.Raw("TRUNCATE TABLE slots;").Commit()
+		dest.Exec("TRUNCATE TABLE slots;")
 	}
 	if !*NoUsers {
 		slog.Info("Truncating users")
-		dest.Raw("TRUNCATE TABLE users;").Commit()
+		dest.Exec("TRUNCATE TABLE users;")
 	}
 	// Give the DB time to actually truncate things
 	time.Sleep(5 * time.Second)
 
+	indexStartTime := time.Now()
+	slog.Info("Creating Indexes")
+	dest.Exec("ALTER TABLE slots ADD COLUMN IF NOT EXISTS textsearchable_index_col tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(slots.name, '') || ' ' || coalesce(slots.np_handle, '') || ' ' || coalesce(slots.description, ''))) STORED;")
+	dest.Exec("CREATE INDEX IF NOT EXISTS slots_textsearch_idx ON slots USING GIN (textsearchable_index_col);")
+	slog.Info("Finished Creating indexes", "indexCreationTime", time.Since(indexStartTime))
+
 	startTime := time.Now()
 
+	totalSlots := 0
+	slotImportTime := time.Duration(0)
 	if !*NoSlots {
-		MigrateSlots(src, dest)
+		slotImportTime, totalSlots = MigrateSlots(src, dest)
 	}
 
+	totalUsers := 0
+	userImportTime := time.Duration(0)
 	if !*NoUsers {
-		MigrateUsers(src, dest)
+		userImportTime, totalUsers = MigrateUsers(src, dest)
 	}
 
 	slog.Info("Finished importing", "duration", time.Since(startTime))
+	if !*NoSlots {
+		slog.Info("Slot Statistics", "totalSlots", totalSlots, "duration", slotImportTime)
+	}
+	if !*NoUsers {
+		slog.Info("User Statistics", "totalUsers", totalUsers, "duration", userImportTime)
+	}
 }
 
-func MigrateSlots(src *gorm.DB, dest *gorm.DB) {
+func MigrateSlots(src *gorm.DB, dest *gorm.DB) (time.Duration, int) {
 	startTime := time.Now()
 	slots := make([]model.Slot, 0, 1000)
-	importSlots := make([]model.ImportSlot, 0, 1000)
-	totalRows := int64(0)
-	result := src.Table("slot").FindInBatches(&importSlots, 1000, func(tx *gorm.DB, batch int) error {
-		totalRows += tx.RowsAffected
-		slog.Info("Processing batch of slots", "batch", batch, "rows", tx.RowsAffected, "totalRows", totalRows)
-		slots = make([]model.Slot, tx.RowsAffected)
+	totalRows := 0
+	err := gorm.G[model.ImportSlot](src).Table("slot").FindInBatches(context.Background(), 1000, func(importSlots []model.ImportSlot, batch int) error {
+		totalRows += len(importSlots)
+		slog.Info("Processing batch of slots", "batch", batch, "rows", len(importSlots), "totalRows", totalRows)
+		slots = make([]model.Slot, len(importSlots))
 
 		for i, slot := range importSlots {
 			slots[i] = model.Slot{
@@ -143,19 +159,21 @@ func MigrateSlots(src *gorm.DB, dest *gorm.DB) {
 		dest.Create(slots)
 		return nil
 	})
-	slog.Info("Finished processing slots", "duration", time.Since(startTime), "rowsProcessed", result.RowsAffected)
-
+	if err != nil {
+		panic(err)
+	}
+	slog.Info("Finished processing slots", "duration", time.Since(startTime), "rowsProcessed", totalRows)
+	return time.Since(startTime), totalRows
 }
 
-func MigrateUsers(src *gorm.DB, dest *gorm.DB) {
+func MigrateUsers(src *gorm.DB, dest *gorm.DB) (time.Duration, int) {
 	startTime := time.Now()
 	users := make([]model.User, 0, 1000)
-	importUsers := make([]model.ImportUser, 0, 1000)
-	totalRows := int64(0)
-	result := src.FindInBatches(&importUsers, 100, func(tx *gorm.DB, batch int) error {
-		totalRows += tx.RowsAffected
-		slog.Info("Processing batch of users", "batch", batch, "rows", tx.RowsAffected, "totalRows", totalRows)
-		users = make([]model.User, tx.RowsAffected)
+	totalRows := 0
+	err := gorm.G[model.ImportUser](src).FindInBatches(context.Background(), 1000, func(importUsers []model.ImportUser, batch int) error {
+		totalRows += len(importUsers)
+		slog.Info("Processing batch of users", "batch", batch, "rows", len(importUsers), "totalRows", totalRows)
+		users = make([]model.User, len(importUsers))
 
 		for i, user := range importUsers {
 			users[i] = model.User{
@@ -185,9 +203,12 @@ func MigrateUsers(src *gorm.DB, dest *gorm.DB) {
 				Pins2:                     user.Pins2,
 			}
 		}
-
 		dest.Create(users)
 		return nil
 	})
-	slog.Info("Finished processing users", "duration", time.Since(startTime), "rowsProcessed", result.RowsAffected, "err", src.Error)
+	if err != nil {
+		panic(err)
+	}
+	slog.Info("Finished processing users", "duration", time.Since(startTime), "rowsProcessed", totalRows, "err", src.Error)
+	return time.Since(startTime), totalRows
 }

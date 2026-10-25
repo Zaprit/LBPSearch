@@ -2,14 +2,21 @@ package archive
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"io"
 	"log/slog"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"sync"
 
+	"github.com/Zaprit/LBPSearch/pkg/db"
+	"github.com/Zaprit/LBPSearch/pkg/model"
 	"github.com/Zaprit/LBPSearch/pkg/storage"
+	"gorm.io/gorm"
 )
 
 // FIXME: a fair warning to all ye who enter, this is a half finished terrible port of lbp_archive_dl that I was working on some time late 2025
@@ -20,71 +27,71 @@ import (
 
 type Downloader struct {
 	store storage.ResourceStorageBackend
-	//conn  *db.Queries
+	conn  *gorm.DB
 }
 
 func (dl *Downloader) DownloadBackup(ctx context.Context, levelID int32) error {
 
-	//slot, err := dl.conn.GetSlot(ctx, levelID)
-	//if err != nil {
-	//	return errors.New("level not found")
-	//}
-	//
-	//slog.Debug("Found Level!", "name", slot.Name, "creator", slot.NpHandle, "game", slot.Game)
-	//
-	//tempDir, err := os.MkdirTemp("", "lbpsearch-"+strconv.FormatInt(int64(levelID), 16))
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//resDir := path.Join(tempDir, "res")
-	//err = os.Mkdir(path.Join(tempDir, "res"), 0755)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//rootLevel := hex.EncodeToString(slot.RootLevel)
-	//
-	//dsCtx, cf := context.WithCancel(ctx)
-	//
-	//ds := DownloadSession{
-	//	store:      dl.store,
-	//	hashes:     new(sync.Map),
-	//	tempDir:    tempDir,
-	//	resDir:     resDir,
-	//	ctx:        dsCtx,
-	//	cancelFunc: cf,
-	//}
-	//
-	//ref, err := ds.FetchResourceWithDependencies(rootLevel)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if ref.header.Method.Type != MethodBinary {
-	//	return errors.New("rootLevel is not binary, it's possibly corrupted")
-	//}
-	//revision := ref.header.Method.Revision
-	//
-	//if GameVersionFromDB(slot.Game) != revision.GetGameVersion() {
-	//	slog.Warn("Game version mismatch, writing version in slot, level was most likely moved in later game.",
-	//		"slot", levelID,
-	//		"slotName", slot.Name,
-	//		"dbVersion", GameVersionFromDB(slot.Game),
-	//		"dataVersion", revision.GetGameVersion(),
-	//	)
-	//}
-	//
-	//levelIDBytes := make([]byte, 4)
-	//binary.BigEndian.PutUint32(levelIDBytes, uint32(levelID))
-	//backupStr := revision.GetGameVersion().GetTitleID() + GetLevelType(slot) + strings.ToUpper(hex.EncodeToString(levelIDBytes))
+	slot, err := db.GetSlot(ctx, dl.conn, levelID)
+	if err != nil {
+		return errors.New("level not found")
+	}
+
+	slog.Debug("Found Level!", "name", slot.Name, "creator", slot.NpHandle, "game", slot.Game)
+
+	tempDir, err := os.MkdirTemp("", "lbpsearch-"+strconv.FormatInt(int64(levelID), 16))
+	if err != nil {
+		return err
+	}
+
+	resDir := path.Join(tempDir, "res")
+	err = os.Mkdir(path.Join(tempDir, "res"), 0755)
+	if err != nil {
+		return err
+	}
+
+	rootLevel := hex.EncodeToString(slot.RootLevel)
+
+	dsCtx, cf := context.WithCancel(ctx)
+
+	ds := DownloadSession{
+		store:      dl.store,
+		hashes:     new(sync.Map),
+		tempDir:    tempDir,
+		resDir:     resDir,
+		ctx:        dsCtx,
+		cancelFunc: cf,
+	}
+
+	ref, err := ds.FetchResourceWithDependencies(rootLevel)
+	if err != nil {
+		return err
+	}
+
+	if ref.header.Method.Type != MethodBinary {
+		return errors.New("rootLevel is not binary, it's possibly corrupted")
+	}
+	revision := ref.header.Method.Revision
+
+	if GameVersionFromDB(int16(slot.Game)) != revision.GetGameVersion() {
+		slog.Warn("Game version mismatch, writing version in slot, level was most likely moved in later game.",
+			"slot", levelID,
+			"slotName", slot.Name,
+			"dbVersion", GameVersionFromDB(int16(slot.Game)),
+			"dataVersion", revision.GetGameVersion(),
+		)
+	}
+
+	levelIDBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(levelIDBytes, uint32(levelID))
+	backupStr := revision.GetGameVersion().GetTitleID() + GetLevelType(slot) + strings.ToUpper(hex.EncodeToString(levelIDBytes))
 
 	return nil
 }
 
-//func GetLevelType(slot db.Slot) string {
-//	return "LEVEL" // TODO: check between levels and lbp3 adventure backups
-//}
+func GetLevelType(_ model.Slot) string {
+	return "LEVEL" // TODO: check between levels and lbp3 adventure backups
+}
 
 type DownloadSession struct {
 	store      storage.ResourceStorageBackend

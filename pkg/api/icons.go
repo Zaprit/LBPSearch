@@ -3,16 +3,18 @@ package api
 import (
 	"bytes"
 	"errors"
-	hs_img "github.com/HugeSpaceship/HugeSpaceship/pkg/image"
 	"image"
 	"image/png"
+
+	hs_img "github.com/HugeSpaceship/HugeSpaceship/pkg/image"
+
+	"io"
+	"log/slog"
+	"net/http"
 
 	"github.com/HugeSpaceship/HugeSpaceship/pkg/validation"
 	"github.com/Zaprit/LBPSearch/pkg/storage"
 	"github.com/Zaprit/LBPSearch/pkg/utils"
-	"io"
-	"log/slog"
-	"net/http"
 )
 
 func IconEndpoint(iconStore storage.ResourceStorageBackend, iconCache storage.IconCacheBackend) http.HandlerFunc {
@@ -30,28 +32,29 @@ func IconEndpoint(iconStore storage.ResourceStorageBackend, iconCache storage.Ic
 			return
 		}
 
-		slog.Info("serving icon", slog.String("hash", hash), slog.Bool("cached", false))
+		hasIcon, err := iconCache.HasIcon(r.Context(), hash)
+		if err != nil {
+			slog.Error("failed to search for icon", "error", err)
+			return
+		}
+		if hasIcon {
+			slog.Info("serving icon", slog.String("hash", hash), slog.Bool("cached", true))
+			img, err := iconCache.GetIcon(r.Context(), hash)
+			if err != nil {
+				utils.HttpLog(w, http.StatusInternalServerError, "Failed to get icon URL")
+				return
+			}
+			w.Header().Set("Content-Type", "image/png")
+			w.Header().Set("Cache-Control", "public, max-age=86400")
+			w.WriteHeader(200)
+			_, err = io.Copy(w, img)
+			if err != nil {
+				slog.Error("failed to write icon image", "error", err)
+			}
+			return
+		}
 
-		//hasIcon, err := iconCache.HasIcon(r.Context(), hash)
-		//if err != nil {
-		//	slog.Error("failed to search for icon", "error", err)
-		//	return
-		//}
-		//if hasIcon {
-		//	img, err := iconCache.GetIcon(r.Context(), hash)
-		//	if err != nil {
-		//		utils.HttpLog(w, http.StatusInternalServerError, "Failed to get icon URL")
-		//		return
-		//	}
-		//	w.Header().Set("Content-Type", "image/png")
-		//	w.Header().Set("Cache-Control", "public, max-age=86400")
-		//	w.WriteHeader(200)
-		//	_, err = io.Copy(w, img)
-		//	if err != nil {
-		//		slog.Error("failed to write icon image", "error", err)
-		//	}
-		//	return
-		//}
+		slog.Info("serving icon", slog.String("hash", hash), slog.Bool("cached", false))
 
 		rawImg, err := iconStore.GetResource(r.Context(), hash)
 		if err != nil {

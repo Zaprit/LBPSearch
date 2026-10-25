@@ -18,7 +18,7 @@ import (
 var StaticFiles embed.FS
 
 func SetupRouting(cfg *config.Config, router chi.Router, conn *gorm.DB, changelog string) {
-	router.Get("/", templ.Handler(pages.HomePage(cfg.HeaderInjection)).ServeHTTP)
+	router.Get("/", templ.Handler(pages.HomePage(cfg.HeaderInjection, "")).ServeHTTP)
 
 	router.Get("/search", handlers.SearchHandler(conn, cfg.HeaderInjection))
 
